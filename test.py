@@ -32,23 +32,16 @@ def dxdt(t,v):
     return 10
 
 
-def integrator(t,v,p2,p3,u1,u2,u3):
+def integrator(t,x,p2,p3,u1,u2,u3):
     izlaz = u1+p2*u2+p3*u3
     return izlaz
 
 def main():
     v0 = 0
-    t = np.linspace(0,10,num=100)
-    print(t)
+    t = 0.1
 
-    sol_m2 = solve_ivp(integrator, t_span=(0,max(t)), y0=[v0], t_eval=t, method="RK45", args=(0,0,10,0,0))
-    
-    v_sol_m2 = sol_m2.y[0]
-
-    plt.plot(t, v_sol_m2)
-    plt.ylabel('$v(t)$', fontsize=22)
-    plt.xlabel('$t$', fontsize=22)
-    plt.show()
+    sol_m2 = solve_ivp(integrator, t_span=(0,0.2), y0=[v0], method="RK45", args=(0,0,10,0,0))
+    print(sol_m2.y)
 
 if __name__=="__main__":
     main()
