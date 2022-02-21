@@ -360,8 +360,8 @@ def sortiraj_niz(obradjen_niz, br_sortiranih, br_blokova, sort_niz):
                 else:
                     ponovo = False
 
-                if not ponovo:
-                    br_sortiranih += 1
+            if not ponovo:
+                br_sortiranih += 1
 
-                if i > br_blokova - 1 and not ponovo:
-                    break
+            if i > br_blokova - 1 and not ponovo:
+                break
