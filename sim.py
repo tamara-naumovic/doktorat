@@ -1,3 +1,4 @@
+from timeit import repeat
 from opcije_simulacije import OpcijeSimulacije
 from csmp_blok import CSMPBlok, from_dict_to_dataclass
 from math import sqrt, sin, cos, atan, exp, floor, ceil
@@ -325,3 +326,42 @@ def racunaj():
     # plt.ylabel('$v(t)$', fontsize=22)
     # plt.xlabel('$t$', fontsize=22)
     # plt.show()
+
+
+def sortiraj_niz(obradjen_niz, br_sortiranih, br_blokova, sort_niz):
+    sort_niz[1] = br_blokova
+    br_sortiranih = 1
+    for i in (2, br_blokova - 1):
+        sort_niz[i] = 0
+
+    for i in (1, br_blokova - 1):
+        if obradjen_niz[1].rbBloka != 0 and obradjen_niz[i].sifra == 12:
+            br_sortiranih += 1
+            sort_niz[br_sortiranih] = obradjen_niz[i].rb_bloka
+            obradjen_niz[i].Sortiran = True
+
+    while True:
+        i = 1
+        ponovo = False
+        while i < br_blokova and not ponovo:
+            if not obradjen_niz[i].sortiran and obradjen_niz[i].rb_bloka != 0:
+                ulaz1 = obradjen_niz[i].ulaz1
+                ulaz2 = obradjen_niz[i].ulaz2
+                ulaz3 = obradjen_niz[i].ulaz3
+
+                uslov1 = obradjen_niz[ulaz1].sifra in [sifre[10], sifre[23]] or obradjen_niz[ulaz1].sortiran or ulaz1 in [0, br_blokova]
+                uslov2 = obradjen_niz[ulaz2].sifra in [sifre[10], sifre[23]]or obradjen_niz[ulaz2].sortiran or ulaz2 in [0, br_blokova]
+                uslov3 = obradjen_niz[ulaz3].sifra in [sifre[10], sifre[23]]or obradjen_niz[ulaz3].sortiran or ulaz3 in [0, br_blokova]
+                if uslov1 and uslov2 and uslov3:
+                    ponovo = True
+                    br_sortiranih += 1
+                    sort_niz[br_sortiranih] = obradjen_niz[i].rb_bloka
+                    obradjen_niz[i].sortiran = True
+                else:
+                    ponovo = False
+
+                if not ponovo:
+                    br_sortiranih += 1
+
+                if i > br_blokova - 1 and not ponovo:
+                    break
