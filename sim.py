@@ -335,7 +335,7 @@ def sortiraj_niz(obradjen_niz, br_sortiranih, br_blokova, sort_niz):
         sort_niz[i] = 0
 
     for blok in obradjen_niz:
-        if blok.rbBloka != 0 and blok.sifra == 12:
+        if blok.rb_bloka != 0 and blok.sifra == 12:
             br_sortiranih += 1
             sort_niz[br_sortiranih] = blok.rb_bloka
             blok.sortiran = True
