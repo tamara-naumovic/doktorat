@@ -328,40 +328,41 @@ def racunaj():
     # plt.show()
 
 
-def sortiraj_niz(obradjen_niz, br_sortiranih, br_blokova, sort_niz):
-    sort_niz[0] = br_blokova
-    br_sortiranih = 1
-    for i in (1, br_blokova - 1):
-        sort_niz[i] = 0
+def sortiraj_niz(opcije: OpcijeSimulacije):
 
-    for blok in obradjen_niz:
-        if blok.rb_bloka != 0 and blok.sifra == 12:
+    opcije.niz_sortiran[0] = opcije.br_blokova
+    br_sortiranih = 0
+    for i in (1, opcije.br_blokova - 1):
+        opcije.niz_sortiran[i] = 0
+
+    for blok in opcije.niz_obradjen:
+        if blok.rb_bloka != 0 and blok.sifra_bloka == sifre["K"]:
             br_sortiranih += 1
-            sort_niz[br_sortiranih] = blok.rb_bloka
+            opcije.niz_sortiran[br_sortiranih] = blok.rb_bloka
             blok.sortiran = True
 
     while True:
         i = 1
         ponovo = False
-        while i < br_blokova and not ponovo:
-            if not obradjen_niz[i].sortiran and obradjen_niz[i].rb_bloka != 0:
-                ulaz1 = obradjen_niz[i].ulaz1
-                ulaz2 = obradjen_niz[i].ulaz2
-                ulaz3 = obradjen_niz[i].ulaz3
+        while i < opcije.br_blokova and not ponovo:
+            if not opcije.niz_obradjen[i].sortiran and opcije.niz_obradjen[i].rb_bloka != 0:
+                ulaz1 = opcije.niz_obradjen[i].ulaz1
+                ulaz2 = opcije.niz_obradjen[i].ulaz2
+                ulaz3 = opcije.niz_obradjen[i].ulaz3
 
-                uslov1 = obradjen_niz[ulaz1].sifra in [sifre[10], sifre[23]] or obradjen_niz[ulaz1].sortiran or ulaz1 in [0, br_blokova]
-                uslov2 = obradjen_niz[ulaz2].sifra in [sifre[10], sifre[23]] or obradjen_niz[ulaz2].sortiran or ulaz2 in [0, br_blokova]
-                uslov3 = obradjen_niz[ulaz3].sifra in [sifre[10], sifre[23]] or obradjen_niz[ulaz3].sortiran or ulaz3 in [0, br_blokova]
+                uslov1 = opcije.niz_obradjen[ulaz1].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz1].sortiran or ulaz1 in [0, opcije.br_blokova]
+                uslov2 = opcije.niz_obradjen[ulaz2].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz2].sortiran or ulaz2 in [0, opcije.br_blokova]
+                uslov3 = opcije.niz_obradjen[ulaz3].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz3].sortiran or ulaz3 in [0, opcije.br_blokova]
                 if uslov1 and uslov2 and uslov3:
                     ponovo = True
                     br_sortiranih += 1
-                    sort_niz[br_sortiranih] = obradjen_niz[i].rb_bloka
-                    obradjen_niz[i].sortiran = True
+                    opcije.niz_sortiran[br_sortiranih] = opcije.niz_obradjen[i].rb_bloka
+                    opcije.niz_obradjen[i].sortiran = True
                 else:
                     ponovo = False
 
             if not ponovo:
                 br_sortiranih += 1
 
-            if i > br_blokova - 1 and not ponovo:
+            if i > opcije.br_blokova - 1 and not ponovo:
                 break

@@ -17,6 +17,8 @@ def main():
     print(opcije.niz_blokova)
     sim.obradi_niz_blokova(opcije)
     print(opcije.niz_obradjen)
+    sim.sortiraj_niz(opcije)
+    print(opcije.niz_sortiran)
 
 
 if __name__=="__main__":
