@@ -3,21 +3,23 @@ from simulator import Simulator
 import sim
 
 def main():
-    opcije = OpcijeSimulacije("tk1.csv",0.1,0.1,10)
+    opcije = OpcijeSimulacije("tk1.csv", 0.1, 0.1, 10)
 
     # Simulator.ucitaj_blokove(opcije)
     # print(opcije.niz_blokova)
     # Simulator.kreiraj_blokove( opcije)
     # print(opcije.niz_blokova)
     # Simulator.obradi_niz_blokova(opcije)
-    # print(opcije.niz_obradjen)    
+    # print(opcije.niz_obradjen)
     sim.ucitaj_blokove(opcije)
     print(opcije.niz_blokova)
-    sim.kreiraj_blokove( opcije)
+    sim.kreiraj_blokove(opcije)
     print(opcije.niz_blokova)
     sim.obradi_niz_blokova(opcije)
     print(opcije.niz_obradjen)
+    sim.sortiraj_niz(opcije)
+    print(opcije.niz_sortiran)
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
