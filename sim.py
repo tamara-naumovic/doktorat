@@ -1,3 +1,4 @@
+from itertools import count
 from timeit import repeat
 from opcije_simulacije import OpcijeSimulacije
 from csmp_blok import CSMPBlok, from_dict_to_dataclass
@@ -62,37 +63,45 @@ def sabirac(p1,p2,p3,u1,u2,u3,brojac):
     # print("usao u sabirac")
 
     izlaz = p1*u1+p2*u2+p3*u3
+    return izlaz
 
 
 def mnozac(u1,u2,brojac):
     # print("usao u mnozac")
 
     izlaz=u1*u2
+    return izlaz
 
 
 def apsolutnavrednost(u1,brojac):
     izlaz=abs(u1)
+    return izlaz
 
 
 def delitelj(u1,u2,brojac):
     # print("usao u delitelj")
     izlaz=u1/u2
+    return izlaz
 
 
 def invertor(u1,brojac):
     izlaz=-u1
+    return izlaz
 
 
 def kvadratniKoren(u1,brojac):
     izlaz=sqrt(u1)
+    return izlaz
 
 
 def offset(p1,u1,brojac):
     izlaz=p1+u1
+    return izlaz
 
 
 def pojacanje(p1,u1,brojac):
     izlaz=p1*u1
+    return izlaz
 
 
 def relej(u1,u2,u3,brojac):
@@ -100,6 +109,7 @@ def relej(u1,u2,u3,brojac):
         izlaz=u3
     else:
         izlaz=u2
+    return izlaz
 
 
 def signum(u1,brojac):
@@ -110,25 +120,30 @@ def signum(u1,brojac):
         izlaz=1
     elif u1==0:
         izlaz=0
+    return izlaz
 
 
 def sinus(p1,p2,p3,u1,brojac):
     izlaz=p1*sin(p2*u1 + p3)
 
+    return izlaz
 
 def kosinus(p1,p2,p3,u1,brojac):
     # print("usao u kosinus")
 
     izlaz=p1*cos(p2*u1+p3)
+    return izlaz
 
 
 def arkusTanges(p1,p2,p3,u1,brojac):
 
     izlaz=p1*atan(p2*u1+p3)
+    return izlaz
 
 
 def eksponent(p1,p2,p3,u1,brojac):
     izlaz=p1*exp(p2*u1+p3)
+    return izlaz
 
 
 def mrtvaZona(p1,p2,u1,brojac):
@@ -138,10 +153,12 @@ def mrtvaZona(p1,p2,u1,brojac):
     else:
         izlaz= u1
 
+    return izlaz
 
 def generatorSlucajnihBrojeva( brojac):
     izlaz = randint(1,99999)
 
+    return izlaz
 
 def ogranicavac(p1,p2,u1,brojac):
     #p1 donja granica, p2 gornja granica
@@ -152,6 +169,7 @@ def ogranicavac(p1,p2,u1,brojac):
             izlaz=p2
         else:
             izlaz=u1
+    return izlaz
 
 
 def negativniOgranicavac(u1,brojac):
@@ -160,12 +178,14 @@ def negativniOgranicavac(u1,brojac):
     else:
         izlaz=u1
 
+    return izlaz
 
 def pozitivniOgranicavac(u1,brojac):
     if u1>0:
         izlaz= 0
     else:
         izlaz=u1
+    return izlaz
 
 #
 # def generatorFja(p1,p2,p3,u1,brojac):
@@ -192,6 +212,7 @@ def pozitivniOgranicavac(u1,brojac):
 
 def generatorImpulsa(p1,u1,brojac):
     izlaz = 1 if u1>0 else 0
+    return izlaz
 
 #
 # def jedinicnoKasnjenje(p1,p2,u1,brojac):
@@ -311,21 +332,11 @@ def obradi_niz_blokova( opsim:OpcijeSimulacije):
             else:
                 blok.rb_integratora=1
     opsim.niz_obradjen = obradjen_niz
-
+    opsim.br_integratora = len([blok for blok in opsim.niz_obradjen if blok.sifra_bloka==10])
 
 
 def racunaj():
-    v0 = 0
-    t = 0.1
-
-    sol_m2 = solve_ivp(integrator, t_span=(0,t), y0=[v0], t_eval=t, method="RK45", args=(0,0,10,0,0))
-    print(sol_m2.y)
-    # v_sol_m2 = sol_m2.y[0]
-
-    # plt.plot(t, v_sol_m2)
-    # plt.ylabel('$v(t)$', fontsize=22)
-    # plt.xlabel('$t$', fontsize=22)
-    # plt.show()
+    pass
 
 def sortiraj_niz(opcije: OpcijeSimulacije):
     
