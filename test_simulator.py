@@ -1,5 +1,4 @@
 from opcije_simulacije import OpcijeSimulacije
-# from simulator import Simulator
 import sim
 
 def main():
