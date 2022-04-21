@@ -1,0 +1,8 @@
+/docs
+/Include
+/Lib
+/Scripts
+/share
+/__pycache__
+/test.json
+/pyvenv.cfg
