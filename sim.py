@@ -3,10 +3,10 @@ from opcije_simulacije import OpcijeSimulacije
 from csmp_blok import CSMPBlok, from_dict_to_dataclass
 from math import sqrt, sin, cos, atan, exp, floor, ceil
 from random import randint
-import numpy as np
-import matplotlib.pyplot as plt
-import scipy as sp
-from scipy.integrate import solve_ivp
+# import numpy as np
+# import matplotlib.pyplot as plt
+# import scipy as sp
+# from scipy.integrate import solve_ivp
 import json, csv
 from copy import copy
 
@@ -263,9 +263,9 @@ def ucitaj_blokove( opsim:OpcijeSimulacije):
                 'ulaz1':int(row["u1"]),
                 'ulaz2':int(row["u2"]),
                 'ulaz3':int(row["u3"]),
-                'par1':int(row["p1"]),
-                'par2':int(row["p2"]),
-                'par3':int(row["p3"]),
+                'par1':float(row["p1"]),
+                'par2':float(row["p2"]),
+                'par3':float(row["p3"]),
                 'sortiran':False,
                 'tip':row["tip"],
                 'rb_bloka':int(row["rbr"]),
@@ -328,36 +328,43 @@ def racunaj():
     # plt.show()
 
 def sortiraj_niz(opcije: OpcijeSimulacije):
-    for blok in opcije.niz_obradjen:
-        opcije.br_blokova += 1
-
+    
+    opcije.br_blokova = len(opcije.niz_obradjen)
+    # print(opcije.br_blokova)
     opcije.niz_sortiran = []
     br_sortiranih = 0
 
+    #postavljanje konstanti na prvo mesto 
     for i in range(opcije.br_blokova):
         if opcije.niz_obradjen[i].rb_bloka != 0 and opcije.niz_obradjen[i].sifra_bloka == sifre["K"]:
             br_sortiranih += 1
             opcije.niz_sortiran.append(opcije.niz_obradjen[i])
             opcije.niz_obradjen[i].sortiran = True
+    while True:
+        if i== opcije.br_blokova and not ponovo:
+            break
+        i = 0
+        ponovo = False
+        while i < opcije.br_blokova and not ponovo:
+            if not opcije.niz_obradjen[i].sortiran:
 
-    i = 0
-    ponovo = False
-    while i < opcije.br_blokova and not ponovo:
-        if not opcije.niz_obradjen[i].sortiran and opcije.niz_obradjen[i].rb_bloka != 0:
-            ulaz1 = opcije.niz_obradjen[i].ulaz1
-            ulaz2 = opcije.niz_obradjen[i].ulaz2
-            ulaz3 = opcije.niz_obradjen[i].ulaz3
-
-            uslov1 = ulaz2==0 or opcije.niz_obradjen[ulaz1-1].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz1].sortiran or ulaz1 in [0, opcije.br_blokova]
-            uslov2 = ulaz1==0 or opcije.niz_obradjen[ulaz2-1].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz2].sortiran or ulaz2 in [0, opcije.br_blokova]
-            uslov3 = ulaz3==0 or opcije.niz_obradjen[ulaz3-1].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz3].sortiran or ulaz3 in [0, opcije.br_blokova]
-            if uslov1 and uslov2 and uslov3:
-                ponovo = True
-                br_sortiranih += 1
-                opcije.niz_sortiran.append(opcije.niz_obradjen[i])
-                opcije.niz_obradjen[i].sortiran = True
-            else:
-                ponovo = False
-        if not ponovo:
-            br_sortiranih += 1
+                ulaz1 = opcije.niz_obradjen[i].ulaz1
+                ulaz2 = opcije.niz_obradjen[i].ulaz2
+                ulaz3 = opcije.niz_obradjen[i].ulaz3
+                #kao ulaz se dobije redni br bloka, redni brojevi pocinju od 1 
+                #indeksi blokova u obradjeni_niz pocinju od 0
+                #zato ulazN-1
+                uslov1 = opcije.niz_obradjen[ulaz1-1].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz1-1].sortiran or ulaz1 in [0, opcije.br_blokova]
+                uslov2 = opcije.niz_obradjen[ulaz2-1].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz2-1].sortiran or ulaz2 in [0, opcije.br_blokova]
+                uslov3 = opcije.niz_obradjen[ulaz3-1].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz3-1].sortiran or ulaz3 in [0, opcije.br_blokova]
+                if uslov1 and uslov2 and uslov3:
+                    ponovo = True
+                    br_sortiranih += 1
+                    opcije.niz_sortiran.append(opcije.niz_obradjen[i])
+                    opcije.niz_obradjen[i].sortiran = True
+                else:
+                    ponovo = False
+            if not ponovo:
+                i += 1
+        
 
