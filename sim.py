@@ -1,4 +1,3 @@
-from itertools import count
 from timeit import repeat
 from opcije_simulacije import OpcijeSimulacije
 from csmp_blok import CSMPBlok, from_dict_to_dataclass
@@ -51,7 +50,7 @@ sifre = {
 def podesi_sifru():
     '''
     realizacija ove metode zavisi od nacina prosledjivanja tabele konfiguracije
-    ako je u tabeli tip podesen kako sifra onda je metoda suvisna
+    ako je u tabeli tip podesen kao sifra onda je metoda suvisna
     ako je u tabeli tip podesen kao karakter potrebno je deifnisati metodu
     tako da zavisno od tipa (cija lista postoji gore) kreira sifru
     '''
@@ -271,11 +270,12 @@ def integrator(p2,p3,u1,u2,u3):
 #             self.izracunaj(sledeciBlok)
 
 
-def izracunaj_izlaz():
-    pass
-
-
 def ucitaj_blokove( opsim:OpcijeSimulacije):
+    '''
+    funkcija koja ucitava blokove iz tabele konfiguracije koja je zapamcena u OpcijeSimulacije
+    i kreira CSMP blokove u formatu recnika koje pamti u opsim.niz_blokova.
+    opsim.niz_blokova se dalje koristi za obradu
+    '''
     lista_dict = []
     with open(opsim.tabela_konfiguracije, mode='r') as csv_file:
         reader = csv.DictReader(csv_file,delimiter=',',quotechar='|')
@@ -302,6 +302,9 @@ def ucitaj_blokove( opsim:OpcijeSimulacije):
 
 
 def kreiraj_blokove( opsim:OpcijeSimulacije):
+    '''
+    funkcija pretvara niz recnika opsim.niz_blokova u niz CSMPBlok objekata
+    '''
     lista_blokova=[]
     for el in opsim.niz_blokova:
         csmpblk = from_dict_to_dataclass(CSMPBlok, el)
@@ -311,6 +314,9 @@ def kreiraj_blokove( opsim:OpcijeSimulacije):
 
 
 def vrati_blok( lista:list[CSMPBlok], rbr):
+    '''
+    funkcija vraća CSMPBlok sa zadatim rednim brojem
+    '''
     for el in lista:
         if el.rb_bloka==0:
             return None
@@ -319,6 +325,12 @@ def vrati_blok( lista:list[CSMPBlok], rbr):
 
 
 def obradi_niz_blokova( opsim:OpcijeSimulacije):
+    '''
+    funkcija obradjuje opsim.niz_blokova i kreira opsim.niz_obradjen
+    prilikom obrade inicijalni parametri bloka vezani za redni broj integratora (-1) se menjaju
+    u zavisnosti od toga da li je blok integrator ili ne
+    takodje upisuje se opsim.br_integratora na broj integrator blokova
+    '''
     obradjen_niz = copy(opsim.niz_blokova)
     for blok in obradjen_niz:
         if blok.sifra_bloka != 10:
@@ -335,11 +347,10 @@ def obradi_niz_blokova( opsim:OpcijeSimulacije):
     opsim.br_integratora = len([blok for blok in opsim.niz_obradjen if blok.sifra_bloka==10])
 
 
-def racunaj():
-    pass
-
 def sortiraj_niz(opcije: OpcijeSimulacije):
-    
+    '''
+    funkcija sortira blokove po zadatom algoritmu, tako da blokovi ciji su ulazi poznati stoje na pocetku
+    '''
     opcije.br_blokova = len(opcije.niz_obradjen)
     # print(opcije.br_blokova)
     opcije.niz_sortiran = []
@@ -379,3 +390,15 @@ def sortiraj_niz(opcije: OpcijeSimulacije):
                 i += 1
         
 
+def racunaj():
+    '''
+    funkcija u kojoj treba da se desi svo racunanje i integracija
+    '''
+    pass
+
+
+def izracunaj_izlaz():
+    '''
+    funkcija koje treba da izracuna izlaz svakog bloka
+    '''
+    pass
