@@ -1,5 +1,5 @@
 from opcije_simulacije import OpcijeSimulacije
-import sim
+import sim, json
 
 def main():
     opcije = OpcijeSimulacije("test_data/tk2.csv", 0.1, 0.1, 10)
@@ -23,7 +23,10 @@ def main():
 
     sim.sortiraj_niz(opcije)
     print(*opcije.niz_sortiran,sep="\n")
+    print("----------------Niz izlaza-------------------")
 
+    sim.generisi_izlaz_indekse(opcije)
+    print(json.dumps(opcije.niz_izlaza, indent=2))
 
 if __name__ == "__main__":
     main()

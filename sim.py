@@ -388,7 +388,32 @@ def sortiraj_niz(opcije: OpcijeSimulacije):
                     ponovo = False
             if not ponovo:
                 i += 1
-        
+
+def generisi_izlaz_indekse(opsim:OpcijeSimulacije):
+    '''
+    funkcija koja generise inicijalni niz_izlaza i njegov format za opcije simulacije u formatu recnika
+    gde su kljucevi recnika "rb_bloka-sifra" a vrednosti su opet recnici ciji su kljucevi intervali integracije od 0 do duzine trajanja sim
+    Npr za interval integracije 0.1 i duzinu simulacije 2, vrednost izlaza za konstantu sa rednim brojem 3 je sledeci>
+    "3-K": {
+    "0.0": 0, "0.1": 0, "0.2": 0, "0.3": 0, "0.4": 0, "0.5": 0, "0.6": 0, "0.7": 0, "0.8": 0, "0.9": 0,
+    "1.0": 0, "1.1": 0, "1.2": 0, 1.3": 0, "1.4": 0, "1.5": 0, "1.6": 0, 1.7": 0, "1.8": 0, "1.9": 0,
+    "2.0": 0
+    }
+    Vrednosti izlaza se za pocetak inicijalizuju na 0.
+    '''
+    global sifre
+    niz_izlaza = {}
+    ukupan_br_vremenskih_slotova = int(1/opsim.interval_integracije)
+    trajanje = opsim.duzina_simulacije*ukupan_br_vremenskih_slotova
+    niz_intervala_intergracije = [str(i/ukupan_br_vremenskih_slotova) for i in range(0,trajanje+1,1)]
+    dict_izlaza = dict(zip(niz_intervala_intergracije, [0 for i in range(trajanje+1)]))
+    for blok in opsim.niz_sortiran:
+        kljuc = f'{blok.rb_bloka}-{list(sifre.keys())[list(sifre.values()).index(blok.sifra_bloka)]}'
+        niz_izlaza[kljuc]=copy(dict_izlaza)
+    opsim.niz_izlaza = niz_izlaza
+    
+
+
 
 def racunaj():
     '''
