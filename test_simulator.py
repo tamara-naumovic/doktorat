@@ -23,10 +23,16 @@ def main():
 
     sim.sortiraj_niz(opcije)
     print(*opcije.niz_sortiran,sep="\n")
-    print("----------------Niz izlaza-------------------")
+    # print("----------------Niz izlaza-------------------")
 
-    sim.generisi_izlaz_indekse(opcije)
-    print(json.dumps(opcije.niz_izlaza, indent=2))
+    # sim.generisi_izlaz_indekse(opcije)
+    # print(json.dumps(opcije.niz_izlaza, indent=2))
+
+    print("----------------Pocetni izlazi-------------------")
+    sim.postavi_pocetne_izlaze(opcije)
+    print(*opcije.niz_sortiran,sep="\n")
+
+    
 
 if __name__ == "__main__":
     main()
