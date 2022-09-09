@@ -13,7 +13,7 @@ class CSMPBlok():
     rb_bloka:int = -1
     sortiran:int = False
     rb_integratora:int = False
-    izlaz:int = None
+    izlaz:int = 0
     tip:str = None
 
 def from_dict_to_dataclass(cls, data):
