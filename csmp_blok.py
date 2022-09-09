@@ -11,9 +11,9 @@ class CSMPBlok():
     par3:float = 0
     sifra_bloka:int = -1
     rb_bloka:int = -1
-    sortiran:int = False
+    sortiran:bool = False
     rb_integratora:int = False
-    izlaz:int = 0
+    izlaz:float = 0
     tip:str = None
 
 def from_dict_to_dataclass(cls, data):

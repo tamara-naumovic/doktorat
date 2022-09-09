@@ -415,7 +415,7 @@ def generisi_izlaz_indekse(opsim:OpcijeSimulacije):
     niz_intervala_intergracije = [str(i/ukupan_br_vremenskih_slotova) for i in range(0,trajanje+1,1)]
     dict_izlaza = dict(zip(niz_intervala_intergracije, [0 for i in range(trajanje+1)]))
     for blok in opsim.niz_sortiran:
-        kljuc = f'{blok.rb_bloka}-{list(sifre.keys())[list(sifre.values()).index(blok.sifra_bloka)]}'
+        kljuc = f'{blok.rb_bloka}-{blok.tip}'
         niz_izlaza[kljuc]=copy(dict_izlaza)
     opsim.niz_izlaza = niz_izlaza
     
