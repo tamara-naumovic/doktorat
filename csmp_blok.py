@@ -3,12 +3,12 @@ import inspect
 @dataclass
 class CSMPBlok():
     
-    ulaz1:int = -1
-    ulaz2:int = -1
-    ulaz3:int = -1
-    par1:float = -1
-    par2:float = -1
-    par3:float = -1
+    ulaz1:int = 0
+    ulaz2:int = 0
+    ulaz3:int = 0
+    par1:float = 0
+    par2:float = 0
+    par3:float = 0
     sifra_bloka:int = -1
     rb_bloka:int = -1
     sortiran:int = False
