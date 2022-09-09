@@ -1,3 +1,4 @@
+from nis import match
 from timeit import repeat
 from opcije_simulacije import OpcijeSimulacije
 from csmp_blok import CSMPBlok, from_dict_to_dataclass
@@ -58,52 +59,52 @@ def podesi_sifru():
 
 
 
-def sabirac(p1,p2,p3,u1,u2,u3,brojac):
+def sabirac(p1,p2,p3,u1,u2,u3,brojac=0):
     # print("usao u sabirac")
 
     izlaz = p1*u1+p2*u2+p3*u3
     return izlaz
 
 
-def mnozac(u1,u2,brojac):
+def mnozac(u1,u2,brojac=0):
     # print("usao u mnozac")
 
     izlaz=u1*u2
     return izlaz
 
 
-def apsolutnavrednost(u1,brojac):
+def apsolutnavrednost(u1,brojac=0):
     izlaz=abs(u1)
     return izlaz
 
 
-def delitelj(u1,u2,brojac):
+def delitelj(u1,u2,brojac=0):
     # print("usao u delitelj")
     izlaz=u1/u2
     return izlaz
 
 
-def invertor(u1,brojac):
+def invertor(u1,brojac=0):
     izlaz=-u1
     return izlaz
 
 
-def kvadratniKoren(u1,brojac):
+def kvadratniKoren(u1,brojac=0):
     izlaz=sqrt(u1)
     return izlaz
 
 
-def offset(p1,u1,brojac):
+def offset(p1,u1,brojac=0):
     izlaz=p1+u1
     return izlaz
 
 
-def pojacanje(p1,u1,brojac):
+def pojacanje(p1,u1,brojac=0):
     izlaz=p1*u1
     return izlaz
 
 
-def relej(u1,u2,u3,brojac):
+def relej(u1,u2,u3,brojac=0):
     if u1<0:
         izlaz=u3
     else:
@@ -111,7 +112,7 @@ def relej(u1,u2,u3,brojac):
     return izlaz
 
 
-def signum(u1,brojac):
+def signum(u1,brojac=0):
     izlaz = None
     if u1<0:
         izlaz = -1
@@ -122,30 +123,30 @@ def signum(u1,brojac):
     return izlaz
 
 
-def sinus(p1,p2,p3,u1,brojac):
+def sinus(p1,p2,p3,u1,brojac=0):
     izlaz=p1*sin(p2*u1 + p3)
 
     return izlaz
 
-def kosinus(p1,p2,p3,u1,brojac):
+def kosinus(p1,p2,p3,u1,brojac=0):
     # print("usao u kosinus")
 
     izlaz=p1*cos(p2*u1+p3)
     return izlaz
 
 
-def arkusTanges(p1,p2,p3,u1,brojac):
+def arkusTanges(p1,p2,p3,u1,brojac=0):
 
     izlaz=p1*atan(p2*u1+p3)
     return izlaz
 
 
-def eksponent(p1,p2,p3,u1,brojac):
+def eksponent(p1,p2,p3,u1,brojac=0):
     izlaz=p1*exp(p2*u1+p3)
     return izlaz
 
 
-def mrtvaZona(p1,p2,u1,brojac):
+def mrtvaZona(p1,p2,u1,brojac=0):
     #p1 donja granica, p2 gornja granica
     if u1>p1 and u1<p2:
         izlaz=0
@@ -159,7 +160,7 @@ def generatorSlucajnihBrojeva( brojac):
 
     return izlaz
 
-def ogranicavac(p1,p2,u1,brojac):
+def ogranicavac(p1,p2,u1,brojac=0):
     #p1 donja granica, p2 gornja granica
     if u1<p1:
         izlaz=p1
@@ -171,7 +172,7 @@ def ogranicavac(p1,p2,u1,brojac):
     return izlaz
 
 
-def negativniOgranicavac(u1,brojac):
+def negativniOgranicavac(u1,brojac=0):
     if u1<0:
         izlaz=0
     else:
@@ -179,7 +180,7 @@ def negativniOgranicavac(u1,brojac):
 
     return izlaz
 
-def pozitivniOgranicavac(u1,brojac):
+def pozitivniOgranicavac(u1,brojac=0):
     if u1>0:
         izlaz= 0
     else:
@@ -187,7 +188,7 @@ def pozitivniOgranicavac(u1,brojac):
     return izlaz
 
 #
-# def generatorFja(p1,p2,p3,u1,brojac):
+# def generatorFja(p1,p2,p3,u1,brojac=0):
 #     pomaA, pomB = 0,0
 #     pomA = p1-p2
 #     p3=p1-p2
@@ -209,12 +210,12 @@ def pozitivniOgranicavac(u1,brojac):
 #         self.VrstaPrekida['poruka'] ='Kod generatora f-ja razlika prvog i drugog parametra mora biti pozitivna!'
 
 
-def generatorImpulsa(p1,u1,brojac):
+def generatorImpulsa(p1,u1,brojac=0):
     izlaz = 1 if u1>0 else 0
     return izlaz
 
 #
-# def jedinicnoKasnjenje(p1,p2,u1,brojac):
+# def jedinicnoKasnjenje(p1,p2,u1,brojac=0):
 
 #     if self.VrstaPrekida['tip'] == "NemaRac":
 #         izlaz=p1
@@ -231,7 +232,7 @@ def integrator(p2,p3,u1,u2,u3):
 
 
 #
-# def kolozadrske(p1,p2,u1,u2,brojac):
+# def kolozadrske(p1,p2,u1,u2,brojac=0):
 #     if self.VrstaPrekida['tip'] == 'NemaRac':
 #         self.ObradjenNiz[brojac]["parII"] = p1
 #         p2=p1
@@ -244,7 +245,7 @@ def integrator(p2,p3,u1,u2,u3):
 #         izlaz=u1
 
 #
-# def krajSimulacije(u1,u2,brojac):
+# def krajSimulacije(u1,u2,brojac=0):
 #     if u2<u1:
 #         self.VrstaPrekida['tip'] = "KrajQuit"
 #         self.VrstaPrekida['poruka'] = "Kraj simulacije od strane Quit elementa."
@@ -255,7 +256,7 @@ def integrator(p2,p3,u1,u2,u3):
 #         self.ObradjenNiz[brojac]["rbIntegratora"] = sledeciblok
 
 #
-# def wye(p1,p2,u1,u2,brojac,pomUl1,sledeciBlok):
+# def wye(p1,p2,u1,u2,brojac=0,pomUl1,sledeciBlok):
 #     pomA = 0.0
 #     if u1==0:
 #         self.VrstaPrekida['tip'] = 'GreskaObrade'
