@@ -4,8 +4,8 @@ from dataclasses import dataclass
 class OpcijeSimulacije():
 
     tabela_konfiguracije:str = ""
-    interval_integracije:int = 0
-    interval_stampanja:int = 0 
+    interval_integracije:float = 0
+    interval_stampanja:float = 0 
     duzina_simulacije:int = 0
     niz_blokova:list = None
     niz_sortiran:list = None
