@@ -7,6 +7,7 @@ class OpcijeSimulacije():
     interval_integracije:float = 0
     interval_stampanja:float = 0 
     duzina_simulacije:int = 0
+    trenutno_vreme:float =0
     niz_blokova:list = None
     niz_sortiran:list = None
     niz_obradjen:list = None
