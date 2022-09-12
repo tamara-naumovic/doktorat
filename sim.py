@@ -325,8 +325,9 @@ def vrati_blok( lista:list[CSMPBlok], rbr):
     funkcija vraća CSMPBlok sa zadatim rednim brojem
     '''
     for el in lista:
-        if el.rb_bloka==0:
-            return None
+        if rbr==0:
+            #ako prosledjeni element 0, nvrati mu nulti el
+            return CSMPBlok(ulaz1=0, ulaz2=0, ulaz3=0,  par1=0.0, par2=0.0, par3=0.0, sifra_bloka=0, rb_bloka=0, sortiran=True, rb_integratora=0, izlaz=0, tip='/')
         elif el.rb_bloka==rbr:
             return el
 
@@ -423,36 +424,37 @@ def postavi_pocetne_izlaze(opsim:OpcijeSimulacije):
     niz_blokova = opsim.niz_sortiran
     for blok in niz_blokova:
         match blok.sifra_bloka:
-            case 1: blok.izlaz= arkusTanges(blok.par1, blok.par2,blok.par3,blok.ulaz1.izlaz)
-            case 2: blok.izlaz= signum(blok.ulaz1.izlaz)
-            case 3: blok.izlaz= kosinus(blok.par1, blok.par2, blok.par3,blok.ulaz1.izlaz)
-            case 4: blok.izlaz= mrtvaZona(blok.par1, blok.par2, blok.ulaz1.izlaz)
-            case 5: blok.izlaz= delitelj(blok.ulaz1.izlaz, blok.ulaz2.izlaz)
-            case 6: blok.izlaz= eksponent(blok.par1, blok.par2, blok.par3, blok.ulaz1.izlaz)
-            case 7: blok.izlaz= generatorFja(blok.par1, blok.par2, blok.par3, blok.ulaz1.izlaz)
-            case 8: blok.izlaz= pojacanje(blok.par1, blok.ulaz1.izlaz)
-            case 9: blok.izlaz= kvadratniKoren(blok.ulaz1.izlaz)
-            case 10: blok.izlaz= integrator(blok.par2, blok.par3, vrati_blok(niz_blokova,blok.ulaz1).izlaz, vrati_blok(niz_blokova,blok.ulaz2).izlaz, vrati_blok(niz_blokova,blok.ulaz3).izlaz)
-            #ispraviti gresku za NoneType kada blok nema ulaza
+            #sve funkcije koje traze izlaz nekog drugog bloka kao svoj ulaz, koriste funkciju vrati_blok() 
+            # u okviru fje se dobija konkretan blok sa njegovim parametrima, pa je moguce dobiti njegov konkretan izlaz 
+            case 1: blok.izlaz= arkusTanges(blok.par1, blok.par2,blok.par3,vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 2: blok.izlaz= signum(vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 3: blok.izlaz= kosinus(blok.par1, blok.par2, blok.par3,vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 4: blok.izlaz= mrtvaZona(blok.par1, blok.par2, vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 5: blok.izlaz= delitelj(vrati_blok(niz_blokova,blok.ulaz1).izlaz, vrati_blok(niz_blokova,blok.ulaz2).izlaz)
+            case 6: blok.izlaz= eksponent(blok.par1, blok.par2, blok.par3, vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 7: blok.izlaz= generatorFja(blok.par1, blok.par2, blok.par3, vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 8: blok.izlaz= pojacanje(blok.par1, vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 9: blok.izlaz= kvadratniKoren(vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 10: blok.izlaz = blok.par1 if blok.par1!=0 else integrator(blok.par2, blok.par3, vrati_blok(niz_blokova,blok.ulaz1).izlaz, vrati_blok(niz_blokova,blok.ulaz2).izlaz, vrati_blok(niz_blokova,blok.ulaz3).izlaz)
             case 11: blok.izlaz= generatorSlucajnihBrojeva()
             case 12: blok.izlaz= blok.par1
-            case 13: blok.izlaz= ogranicavac(blok.par1, blok.par2, blok.ulaz1.izlaz)
-            case 14: blok.izlaz= apsolutnavrednost(blok.ulaz1.izlaz)
-            case 15: blok.izlaz= invertor(blok.ulaz1.izlaz)
-            case 16: blok.izlaz= negativniOgranicavac(blok.ulaz1.izlaz)
-            case 17: blok.izlaz= offset(blok.par1, blok.ulaz1.izlaz)
-            case 18: blok.izlaz= pozitivniOgranicavac(blok.ulaz1.izlaz)
-            case 19: blok.izlaz= krajSimulacije(blok.ulaz1.izlaz, blok.ulaz2.izlaz)
-            case 20: blok.izlaz= relej(blok.ulaz1.izlaz, blok.ulaz2.izlaz, blok.ulaz3.izlaz)
-            case 21: blok.izlaz= sinus(blok.par1, blok.par2, blok.par3, blok.ulaz1.izlaz)
-            case 22: blok.izlaz= generatorImpulsa(blok.par1. blok.ulaz1.izlaz)
-            case 23: blok.izlaz=jedinicnoKasnjenje(blok.par1, blok.par2, blok.ulaz1.izlaz) #pogledati validnost potpisa ove funkcije
+            case 13: blok.izlaz= ogranicavac(blok.par1, blok.par2, vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 14: blok.izlaz= apsolutnavrednost(vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 15: blok.izlaz= invertor(vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 16: blok.izlaz= negativniOgranicavac(vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 17: blok.izlaz= offset(blok.par1, vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 18: blok.izlaz= pozitivniOgranicavac(vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 19: blok.izlaz= krajSimulacije(vrati_blok(niz_blokova,blok.ulaz1).izlaz, blok.ulaz2.izlaz)
+            case 20: blok.izlaz= relej(vrati_blok(niz_blokova,blok.ulaz1).izlaz, vrati_blok(niz_blokova,blok.ulaz2).izlaz, vrati_blok(niz_blokova,blok.ulaz3).izlaz)
+            case 21: blok.izlaz= sinus(blok.par1, blok.par2, blok.par3, vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 22: blok.izlaz= generatorImpulsa(blok.par1. vrati_blok(niz_blokova,blok.ulaz1).izlaz)
+            case 23: blok.izlaz=jedinicnoKasnjenje(blok.par1, blok.par2, vrati_blok(niz_blokova,blok.ulaz1).izlaz) #pogledati validnost potpisa ove funkcije
             case 24: blok.izlaz= vacuous(blok) #proveriti
             case 25: blok.izlaz= opsim.trenutno_vreme
-            case 26: blok.izlaz= sabirac(blok.par1, blok.par2, blok.par3,blok.ulaz1.izlaz, blok.ulaz2.izlaz, blok.ulaz3.izlaz )
-            case 27: blok.izlaz= mnozac(blok.ulaz1.izlaz, blok.ulaz2.izlaz)
-            case 28: blok.izlaz= wye(blok.par1, blok.par2, blok.ulaz1.izlaz, blok.ulaz2.izlaz, blok, blok ) #proveriti
-            case 0: blok.izlaz= kolozadrske(blok.par1, blok.par2, blok.ulaz1.izlaz, blok.ulaz2.izlaz)
+            case 26: blok.izlaz= sabirac(blok.par1, blok.par2, blok.par3,vrati_blok(niz_blokova,blok.ulaz1).izlaz, vrati_blok(niz_blokova,blok.ulaz2).izlaz, vrati_blok(niz_blokova,blok.ulaz3).izlaz )
+            case 27: blok.izlaz= mnozac(vrati_blok(niz_blokova,blok.ulaz1).izlaz, vrati_blok(niz_blokova,blok.ulaz2).izlaz)
+            case 28: blok.izlaz= wye(blok.par1, blok.par2, vrati_blok(niz_blokova,blok.ulaz1).izlaz, vrati_blok(niz_blokova,blok.ulaz2).izlaz, blok, blok ) #proveriti
+            case 0: blok.izlaz= kolozadrske(blok.par1, blok.par2, vrati_blok(niz_blokova,blok.ulaz1).izlaz, vrati_blok(niz_blokova,blok.ulaz2).izlaz)
     opsim.niz_sortiran =niz_blokova
 
 
