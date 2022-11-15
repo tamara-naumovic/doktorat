@@ -32,6 +32,13 @@ def main():
     sim.postavi_pocetne_izlaze(opcije)
     print(*opcije.niz_sortiran,sep="\n")
 
+    print("----------------Izlazi-------------------")
+    print(opcije.niz_izlaza)    
+    
+    print("----------------Rb integratora-------------------")
+    print(opcije.niz_rb_integratora)
+
+
     
 
 if __name__ == "__main__":

@@ -666,7 +666,7 @@ begin { PolaIntervala }
     PomBrojac := NizRBIntegratora[PomBrInteg];
     NizIzlaza[PomBrojac] := VektorY[PomBrInteg];
   end;
-  SledeciBlok := BrKonst+2;
+  SledeciBlok := BrKonst+2; //prvi sledeci blok koji nije konstanta u nizu sortiranih
   Izracunaj(SledeciBlok);
 end;
 
