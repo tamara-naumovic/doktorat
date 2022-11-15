@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from csmp_blok import CSMPBlok
 
 @dataclass
 class OpcijeSimulacije():
@@ -6,15 +7,22 @@ class OpcijeSimulacije():
     tabela_konfiguracije:str = ""
     interval_integracije:float = 0
     interval_stampanja:float = 0 
+    pola_intervala_integracije:float = 0
     duzina_simulacije:int = 0
     trenutno_vreme:float =0
-    niz_blokova:list = None
-    niz_sortiran:list = None
-    niz_obradjen:list = None
-    niz_izlaza: list = None #ovo bi trebalo da bude matrica
+    niz_blokova:list[CSMPBlok] = None
+    niz_sortiran:list[CSMPBlok] = None
+    niz_obradjen:list[CSMPBlok] = None
+    niz_izlaza: dict[int,float] = None #pomocni izlazi za neki interval integracije
+    matrica_izlaza:list = None #matrica svih izlaza za sve intervale intergracije
     br_konstanti:int = 0
     br_blokova:int= 0
     br_integratora:int = 0
+    niz_rb_integratora:dict[int,int] = None
+    vektorX:list = None #cuva vrednosti svih integratora
+    vektorY:list = None # y(n+1)
+    vektorZ:list = None # y(n)
+    nizK:list = None
     '''
         tabela_konfiguracije se dobija u vidu csv fajla
         i konvertuje se u listu rečnika
