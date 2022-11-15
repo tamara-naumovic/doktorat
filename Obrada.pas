@@ -475,15 +475,15 @@ var
   BrTacStampe: real;
 
 begin
-  SetLength(VektorX, BrojIntegratora + 1);
-  SetLength(VektorY, BrojIntegratora + 1);
-  SetLength(VektorZ, BrojIntegratora + 1);
+  SetLength(VektorX, BrojIntegratora + 1); //2
+  SetLength(VektorY, BrojIntegratora + 1); //2
+  SetLength(VektorZ, BrojIntegratora + 1); //2
   SetLength(NizK, BrojIntegratora + 1);
 
-  for PomProm := 2 to BrojSortiranih do
+  for PomProm := 2 to BrojSortiranih do // 2-3
   begin
     PomA := SortiranNiz[PomProm];
-    NizIzlaza[PomA] := ObradjenNiz[PomA].ParI;
+    NizIzlaza[PomA] := ObradjenNiz[PomA].ParI; // postavljanje pocetnih izlaza
   end;
 
   for PomProm := 1 to BrojIntegratora do
@@ -495,16 +495,17 @@ begin
   TekVremeSim := 0.0;
 
   { racuna se f(Xn,Yn) }
-  PomEP := PolaIntIntegracije/(IntervalStampanja * 2.0);
+  PomEP := PolaIntIntegracije/(IntervalStampanja * 2.0); // 0.25
   VrstaPrekida.Tip := NemaRac;
   BrTacStampe := trunc(TekVremeSim/IntervalStampanja + 1);
   PolaIntervala;
   { kraj racuna f(Xn,Yn) }
   ZabeleziIzlaz(KorakStampe, TrenutniBlok);
-
+ //k1 je f(xn,yn)
   { simulacija metodom Runge-Kuta IV reda }
   repeat
    // PRVA POLOVINA INTERVALA: racuna se f(Xn+1/2*h, Yn+1/2*k1)
+   //k2
     VrstaPrekida.Tip := PrvaPol;
     for PomProm:=1 to BrojIntegratora do
     begin
