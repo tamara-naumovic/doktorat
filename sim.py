@@ -1,8 +1,8 @@
 from timeit import repeat
 from opcije_simulacije import OpcijeSimulacije
 from csmp_blok import CSMPBlok, from_dict_to_dataclass
-from math import sqrt, sin, cos, atan, exp, floor, ceil
-from random import randint
+from math import sqrt, sin, cos, atan, exp, copysign
+from random import uniform
 # import numpy as np
 # import matplotlib.pyplot as plt
 # import scipy as sp
@@ -56,137 +56,102 @@ def podesi_sifru():
     '''
     pass
 
-
+# def izlaz(izlaz, brojac, opsim:OpcijeSimulacije):
+#     if brojac!=0:
+#         opsim.niz_izlaza[brojac]=izlaz
+#         return 
+#     else: return izlaz
 
 def sabirac(p1,p2,p3,u1,u2,u3,brojac=0, opsim:OpcijeSimulacije=None):
-    # print("usao u sabirac")
-
-    izlaz = p1*u1+p2*u2+p3*u3
-    return izlaz
-
+    opsim.niz_izlaza[brojac]=p1*u1+p2*u2+p3*u3
+    return True
 
 def mnozac(u1,u2,brojac=0,opsim:OpcijeSimulacije=None):
-    # print("usao u mnozac")
-
-    izlaz=u1*u2
-    return izlaz
-
+    opsim.niz_izlaza[brojac] = u1*u2
+    return True
 
 def apsolutnavrednost(u1,brojac=0,opsim:OpcijeSimulacije=None):
-    izlaz=abs(u1)
-    return izlaz
-
+    opsim.niz_izlaza[brojac]=abs(u1)
+    return True
 
 def delitelj(u1,u2,brojac=0,opsim:OpcijeSimulacije=None):
-    # print("usao u delitelj")
-    izlaz=u1/u2
-    return izlaz
-
+    if u2!=0:
+        opsim.niz_izlaza[brojac]=u1/u2
+        return True
+    else: return False
 
 def invertor(u1,brojac=0,opsim:OpcijeSimulacije=None):
-    izlaz=-u1
-    return izlaz
-
+    opsim.niz_izlaza[brojac]=-u1
+    return True
 
 def kvadratniKoren(u1,brojac=0,opsim:OpcijeSimulacije=None):
-    izlaz=sqrt(u1)
-    return izlaz
-
+    opsim.niz_izlaza[brojac]=sqrt(u1)
+    return True
 
 def offset(p1,u1,brojac=0,opsim:OpcijeSimulacije=None):
-    izlaz=p1+u1
-    return izlaz
-
+    opsim.niz_izlaza[brojac]=p1+u1
+    return True
 
 def pojacanje(p1,u1,brojac=0,opsim:OpcijeSimulacije=None):
-    izlaz=p1*u1
-    return izlaz
-
+    opsim.niz_izlaza[brojac]=p1*u1
+    return True
 
 def relej(u1,u2,u3,brojac=0,opsim:OpcijeSimulacije=None):
-    if u1<0:
-        izlaz=u3
-    else:
-        izlaz=u2
-    return izlaz
-
+    opsim.niz_izlaza[brojac] = u3 if u1<0 else u2
+    return True
 
 def signum(u1,brojac=0,opsim:OpcijeSimulacije=None):
-    izlaz = None
-    if u1<0:
-        izlaz = -1
-    elif u1>0:
-        izlaz=1
-    elif u1==0:
-        izlaz=0
-    return izlaz
-
+    opsim.niz_izlaza[brojac] = 0 if u1==0 else copysign(1,u1)
+    return True
 
 def sinus(p1,p2,p3,u1,brojac=0,opsim:OpcijeSimulacije=None):
-    izlaz=p1*sin(p2*u1 + p3)
-
-    return izlaz
+    opsim.niz_izlaza[brojac]=p1*sin(p2*u1 + p3)
+    return True
 
 def kosinus(p1,p2,p3,u1,brojac=0,opsim:OpcijeSimulacije=None):
-    # print("usao u kosinus")
-
-    izlaz=p1*cos(p2*u1+p3)
-    return izlaz
-
+    opsim.niz_izlaza[brojac]=p1*cos(p2*u1+p3)
+    return True
 
 def arkusTanges(p1,p2,p3,u1,brojac=0,opsim:OpcijeSimulacije=None):
-
-    izlaz=p1*atan(p2*u1+p3)
-    return izlaz
-
+    if (p2*u1+p3)>=0.0:
+        opsim.niz_izlaza[brojac]=p1*atan(p2*u1+p3)
+        return True
+    else: 
+        print("Arkus tanges je negativan") #dodati obradu grešaka
+        return False
 
 def eksponent(p1,p2,p3,u1,brojac=0,opsim:OpcijeSimulacije=None):
-    izlaz=p1*exp(p2*u1+p3)
-    return izlaz
+    opsim.niz_izlaza[brojac]=p1*exp(p2*u1+p3)
+    return True
 
-
-def mrtvaZona(p1,p2,u1,brojac=0,opsim:OpcijeSimulacije=None):
+def mrtvaZona(p1,p2,u1,brojac,opsim:OpcijeSimulacije):
     #p1 donja granica, p2 gornja granica
-    if u1>p1 and u1<p2:
-        izlaz=0
-    else:
-        izlaz= u1
+    opsim.niz_izlaza[brojac]=0 if p1<u1<p2 else u1
+    return True
 
-    return izlaz
-
-def generatorSlucajnihBrojeva( brojac):
-    izlaz = randint(1,99999)
-
-    return izlaz
+def generatorSlucajnihBrojeva(brojac, opsim:OpcijeSimulacije):
+    opsim.niz_izlaza[brojac] = uniform(0,1)
+    return True
 
 def ogranicavac(p1,p2,u1,brojac=0,opsim:OpcijeSimulacije=None):
-    #p1 donja granica, p2 gornja granica
-    if u1<p1:
-        izlaz=p1
-    else:
-        if u1>p2:
-            izlaz=p2
-        else:
-            izlaz=u1
-    return izlaz
-
+    opsim.niz_blokova[brojac] = p1 if u1<p1 else p2 if u1<p2 else u1
+    return True
 
 def negativniOgranicavac(u1,brojac=0,opsim:OpcijeSimulacije=None):
-    if u1<0:
-        izlaz=0
-    else:
-        izlaz=u1
-
-    return izlaz
+    opsim.niz_izlaza[brojac] = 0 if u1<0 else u1
+    return True
 
 def pozitivniOgranicavac(u1,brojac=0,opsim:OpcijeSimulacije=None):
-    if u1>0:
-        izlaz= 0
-    else:
-        izlaz=u1
-    return izlaz
+    opsim.niz_izlaza[brojac] = 0 if u1>0 else u1
+    return True
 
-#
+def integrator(p2,p3,u1,u2,u3,brojac=0,opsim:OpcijeSimulacije=None):
+    blok_intg = opsim.niz_sortiran[brojac]
+    opsim.vektorY[blok_intg.rb_integratora] = u1+p2*u2+p3*u3
+    return True
+
+#pitati profesora za>
+
 def generatorFja(p1,p2,p3,u1,brojac=0,opsim:OpcijeSimulacije=None):
     pass
 #     pomaA, pomB = 0,0
@@ -225,17 +190,6 @@ def jedinicnoKasnjenje(p1,p2,u1,brojac=0,opsim:OpcijeSimulacije=None):
 #         izlaz=p2
 #     self.ObradjenNiz[brojac]['parII'] = u1
 
-
-def integrator(p2,p3,u1,u2,u3,brojac=0,opcije:OpcijeSimulacije=None):
-    # print("usao u integrator")
-    izlaz = u1+p2*u2+p3*u3
-    # blok = vrati_blok(opcije.niz_sortiran,brojac)
-    # opcije.vektorX[blok.rb_integratora] = izlaz
-    return izlaz
-
-
-
-#
 def kolozadrske(p1,p2,u1,u2,brojac=0,opsim:OpcijeSimulacije=None):
     pass
 #     if self.VrstaPrekida['tip'] == 'NemaRac':
@@ -334,7 +288,7 @@ def vrati_blok( lista:list[CSMPBlok], rbr):
             return el
 
 
-def obradi_niz_blokova( opsim:OpcijeSimulacije):
+def obradi_niz_blokova(opsim:OpcijeSimulacije):
     '''
     funkcija obradjuje opsim.niz_blokova i kreira opsim.niz_obradjen
     prilikom obrade inicijalni parametri bloka vezani za redni broj integratora (-1) se menjaju
@@ -347,9 +301,9 @@ def obradi_niz_blokova( opsim:OpcijeSimulacije):
         if blok.sifra_bloka != 10:
             blok.rb_integratora = 0
         elif blok.sifra_bloka==10:
-            u1_blok = vrati_blok(obradjen_niz, blok.ulaz1)
-            u2_blok = vrati_blok(obradjen_niz, blok.ulaz2)
-            u3_blok = vrati_blok(obradjen_niz, blok.ulaz3)
+            u1_blok = obradjen_niz[blok.ulaz1-1]
+            u2_blok = obradjen_niz[blok.ulaz2-1]
+            u3_blok = obradjen_niz[blok.ulaz3-1]
             if (u1_blok!=None and u1_blok.sifra_bloka==10) or (u2_blok!=None and u2_blok.sifra_bloka==10) or (u3_blok!=None and u3_blok.sifra_bloka==10):
                 blok.rb_integratora=2
                 opsim.niz_rb_integratora[1] =2
