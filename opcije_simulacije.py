@@ -14,7 +14,7 @@ class OpcijeSimulacije():
     niz_sortiran:list[CSMPBlok] = None
     niz_obradjen:list[CSMPBlok] = None
     niz_izlaza: dict[int,float] = None #pomocni izlazi za neki interval integracije
-    matrica_izlaza:list = None #matrica svih izlaza za sve intervale intergracije
+    matrica_izlaza:dict[str,list] = None #matrica svih izlaza za sve intervale intergracije
     br_konstanti:int = 0
     br_blokova:int= 0
     br_integratora:int = 0
