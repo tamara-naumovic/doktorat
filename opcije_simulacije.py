@@ -18,7 +18,7 @@ class OpcijeSimulacije():
     br_konstanti:int = 0
     br_blokova:int= 0
     br_integratora:int = 0
-    niz_rb_integratora:dict[int,int] = None
+    niz_rb_integratora:dict[int,int] = None #niz rbintg:rbblok
     #vektori postavljeni na dict da bi imali vrednosti od 1 do br intergratora, umesto da 0 preskacemo
     vektorX:dict[int,float] = None #cuva vrednosti svih integratora
     vektorY:dict[int,float] = None # y(n+1)

@@ -297,23 +297,26 @@ def obradi_niz_blokova(opsim:OpcijeSimulacije):
     takodje upisuje se opsim.br_integratora na broj integrator blokova
     '''
     obradjen_niz = copy(opsim.niz_blokova)
+    opsim.br_integratora = len([blok for blok in opsim.niz_blokova if blok.sifra_bloka==10])
     opsim.niz_rb_integratora = {}
+    for i in range(1,opsim.br_integratora+1):
+        opsim.niz_rb_integratora[i] = -1 #nije postavljen rbBloka ako je -1
+    opsim
     for blok in obradjen_niz:
         if blok.sifra_bloka != 10:
             blok.rb_integratora = 0
-        elif blok.sifra_bloka==10:
+        elif blok.sifra_bloka==10: #ako je blok integrator
             u1_blok = obradjen_niz[blok.ulaz1-1]
             u2_blok = obradjen_niz[blok.ulaz2-1]
             u3_blok = obradjen_niz[blok.ulaz3-1]
             if (u1_blok!=None and u1_blok.sifra_bloka==10) or (u2_blok!=None and u2_blok.sifra_bloka==10) or (u3_blok!=None and u3_blok.sifra_bloka==10):
                 blok.rb_integratora=2
-                opsim.niz_rb_integratora[1] =2
-
+                opsim.niz_rb_integratora[blok.rb_integratora]=blok.rb_bloka
+                #niz_rb_integratora treba da pamti redne brojeve blokova koji su integratori
             else:
                 blok.rb_integratora=1
-                opsim.niz_rb_integratora[0] =1
+                opsim.niz_rb_integratora[blok.rb_integratora]=blok.rb_bloka
     opsim.niz_obradjen = obradjen_niz
-    opsim.br_integratora = len([blok for blok in opsim.niz_obradjen if blok.sifra_bloka==10])
 
 def sortiraj_niz(opcije: OpcijeSimulacije):
     '''
