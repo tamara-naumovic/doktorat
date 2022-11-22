@@ -36,6 +36,8 @@ def main():
     # print(json.dumps(opcije.matrica_izlaza, indent=4))
     print("----------------Matrica izlaza-------------------")
     print(json.dumps(opcije.matrica_izlaza, indent=4))
+    with open('result.json', 'w') as fp:
+        json.dump(opcije.matrica_izlaza, fp)
 
     # print("----------------Izlazi-------------------")
     # print(opcije.niz_izlaza)    
