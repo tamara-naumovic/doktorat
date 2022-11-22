@@ -26,18 +26,21 @@ def main():
     # print("----------------Niz izlaza-------------------")
 
     # sim.generisi_izlaz_indekse(opcije)
-    # print(json.dumps(opcije.niz_izlaza, indent=2))
+    # # # print(json.dumps(opcije.niz_izlaza, indent=2))
 
     print("----------------Pocetni izlazi-------------------")
     sim.postavi_pocetne_izlaze(opcije)
-    print(*opcije.niz_sortiran,sep="\n")
+    print(opcije.niz_izlaza,sep="\n")
+    print("----------------Vektory Y-------------------")
+    print(opcije.vektorY)
 
-    print("----------------Izlazi-------------------")
-    print(opcije.niz_izlaza)    
+    # print("----------------Izlazi-------------------")
+    # print(opcije.niz_izlaza)    
     
-    print("----------------Rb integratora-------------------")
-    print(opcije.niz_rb_integratora)
+    # print("----------------Rb integratora-------------------")
+    # print(opcije.niz_rb_integratora)
 
+    
 
     
 

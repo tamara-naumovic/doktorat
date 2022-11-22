@@ -75,6 +75,7 @@ def apsolutnavrednost(u1):
     return izlaz
 
 def delitelj(u1,u2):
+    print("Ulaz2 "+str(u2))
     if u2!=0:
         izlaz=u1/u2
         return izlaz
@@ -144,10 +145,10 @@ def negativniOgranicavac(u1):
 def pozitivniOgranicavac(u1):
     izlaz = 0 if u1>0 else u1
     return izlaz
-
-def integrator(p2,p3,u1,u2,u3):
-    blok_intg = opsim.niz_sortiran[brojac]
-    opsim.vektorY[blok_intg.rb_integratora] = u1+p2*u2+p3*u3
+#integratoru treba opsim jer upisuje u vektorY
+def integrator(p2,p3,u1,u2,u3, opsim:OpcijeSimulacije, rbInteg):
+    # blok_intg = opsim.niz_sortiran[brojac]
+    opsim.vektorY[rbInteg] = u1+p2*u2+p3*u3
     # return True sta integrator da vrati kao izlaz
 
 #pitati profesora za>
@@ -363,6 +364,19 @@ def postavi_pocetne_izlaze(opsim:OpcijeSimulacije):
     opsim.matrica_izlaza = {} #inicjalizovana matrica izlaza
     opsim.matrica_izlaza["0"] = [] #prazan niz pocetnih izlaza
     opsim.niz_izlaza = {} #pocetni niz izlaza za jednu vremensku jedinicu
+    #inicijalizacija niza na 0, kako ne bi bacao exeption
+    for i in range(1, opsim.br_blokova+1):
+        opsim.niz_izlaza[i]=0.0 
+
+    #inicijalizacije vektora X Y Z
+    opsim.vektorX = {}
+    opsim.vektorY = {}
+    opsim.vektorZ = {}
+    for i in range(1, opsim.br_integratora+1):
+        opsim.vektorX[i] = 0.0
+        opsim.vektorY[i] = 0.0
+        opsim.vektorZ[i] = 0.0
+
     niz_blokova = opsim.niz_sortiran
     for blok in niz_blokova:
         p1 = blok.par1
@@ -371,12 +385,14 @@ def postavi_pocetne_izlaze(opsim:OpcijeSimulacije):
 
         #u pomu{N} se upisuje vrednost izlaza za rbr blok ulaza
         pomu1 = opsim.niz_obradjen[blok.rb_bloka-1].ulaz1
-        u1 = 0.0 if pomu1 == 0 else opsim.niz_izlaza[blok.rb_bloka-1]
+        u1 = 0.0 if pomu1 == 0 else opsim.niz_izlaza[pomu1]
+        #ne mora blok.rb_bloka-1 jer je niz_izlaza dict koji ide od 1 do brBlokova
         pomu2 = opsim.niz_obradjen[blok.rb_bloka-1].ulaz2
-        u2 = 0.0 if pomu2 == 0 else opsim.niz_izlaza[blok.rb_bloka-1]
+        u2 = 0.0 if pomu2 == 0 else opsim.niz_izlaza[pomu2]
         pomu3 = opsim.niz_obradjen[blok.rb_bloka-1].ulaz3
-        u3 = 0.0 if pomu3 == 0 else opsim.niz_izlaza[blok.rb_bloka-1]
+        u3 = 0.0 if pomu3 == 0 else opsim.niz_izlaza[pomu3]
         izlaz = 0
+
         match blok.sifra_bloka:
             #sve funkcije koje traze izlaz nekog drugog bloka kao svoj ulaz, koriste funkciju vrati_blok() 
             # u okviru fje se dobija konkretan blok sa njegovim parametrima, pa je moguce dobiti njegov konkretan izlaz 
@@ -389,7 +405,13 @@ def postavi_pocetne_izlaze(opsim:OpcijeSimulacije):
             case 7: izlaz=generatorFja(p1, p2, p3, u1)
             case 8: izlaz=pojacanje(p1, u1)
             case 9: izlaz=kvadratniKoren(u1)
-            case 10: izlaz=p1 
+            case 10: 
+                izlaz=p1
+                integrator(p2,p3,u1,u2,u3,opsim,blok.rb_integratora)
+                print("Integrator: \n")
+                print(blok)
+                print("VektorY")
+                print(opsim.vektorY)
             case 11: izlaz=generatorSlucajnihBrojeva()
             case 12: izlaz=p1
             case 13: izlaz=ogranicavac(p1, p2, u1)
@@ -409,8 +431,7 @@ def postavi_pocetne_izlaze(opsim:OpcijeSimulacije):
             case 27: izlaz=mnozac(u1, u2)
             case 28: izlaz=wye(p1, p2, u1, u2, blok, blok ) #proveriti
             case 0: izlaz=kolozadrske(p1, p2, u1, u2)
-        upisi_izlaz(opsim, blok.sifra_bloka, izlaz)
-
+        upisi_izlaz(opsim, blok.rb_bloka, izlaz)       
 
 def racunaj(opcije:OpcijeSimulacije):
     '''
