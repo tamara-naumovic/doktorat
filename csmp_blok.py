@@ -16,7 +16,7 @@ class CSMPBlok():
     izlaz:float = 0
     tip:str = None
 
-def from_dict_to_dataclass(cls, data):
+def from_dict_to_dataclass(cls, data)->CSMPBlok:
     return cls(
         **{
             key: (data[key] if val.default == val.empty else data.get(key, val.default))

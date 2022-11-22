@@ -75,7 +75,6 @@ def apsolutnavrednost(u1):
     return izlaz
 
 def delitelj(u1,u2):
-    print("Ulaz2 "+str(u2))
     if u2!=0:
         izlaz=u1/u2
         return izlaz
@@ -233,6 +232,21 @@ def wye(p1,p2,u1,u2,pomUl1,sledeciBlok):
 #             sledeciBlok=self.ObradjenNiz[pomUl1]["rbIntegratora"]
 #             self.izracunaj(sledeciBlok)
 
+def incijalizuj_sve(opsim:OpcijeSimulacije, brElemenata):
+    #inicijalizacija niz_blokova
+    opsim.niz_blokova = {}
+    opsim.niz_obradjen = {}
+    opsim.niz_sortiran = {}
+    for i in range(brElemenata):
+        if i ==0:
+            opsim.niz_blokova[i] = None
+            opsim.niz_obradjen[i] = None
+            opsim.niz_sortiran[i] = None
+        opsim.niz_blokova[i+1] = []
+        opsim.niz_obradjen[i+1] = []
+        opsim.niz_sortiran[i+1] = []
+    opsim.br_blokova = brElemenata
+    
 
 def ucitaj_blokove( opsim:OpcijeSimulacije):
     '''
@@ -258,36 +272,18 @@ def ucitaj_blokove( opsim:OpcijeSimulacije):
                 'sifra_bloka': sifre[str(row["tip"])]
             }
             lista_dict.append(red)
+    
 
     with open("test.json", 'w') as outfile:
-        json.dump(lista_dict,outfile )
-    opsim.niz_blokova = lista_dict
+        json.dump(lista_dict,outfile)
+    
+    #inicijalizacija 
+    incijalizuj_sve(opsim, len(lista_dict))
+
+    for element in lista_dict:
+        csmpblok = from_dict_to_dataclass(CSMPBlok,element)
+        opsim.niz_blokova[csmpblok.rb_bloka] = csmpblok
     # return lista_dict
-
-
-def kreiraj_blokove( opsim:OpcijeSimulacije):
-    '''
-    funkcija pretvara niz recnika opsim.niz_blokova u niz CSMPBlok objekata
-    '''
-    lista_blokova=[]
-    for el in opsim.niz_blokova:
-        csmpblk = from_dict_to_dataclass(CSMPBlok, el)
-        lista_blokova.append(csmpblk)
-    opsim.niz_blokova = lista_blokova
-    # return lista_blokova
-
-
-def vrati_blok( lista:list[CSMPBlok], rbr):
-    '''
-    funkcija vraća CSMPBlok sa zadatim rednim brojem
-    '''
-    for el in lista:
-        if rbr==0:
-            #ako prosledjeni element 0, nvrati mu nulti el
-            return CSMPBlok(ulaz1=0, ulaz2=0, ulaz3=0,  par1=0.0, par2=0.0, par3=0.0, sifra_bloka=0, rb_bloka=0, sortiran=True, rb_integratora=0, izlaz=0, tip='/')
-        elif el.rb_bloka==rbr:
-            return el
-
 
 def obradi_niz_blokova(opsim:OpcijeSimulacije):
     '''
@@ -297,18 +293,20 @@ def obradi_niz_blokova(opsim:OpcijeSimulacije):
     takodje upisuje se opsim.br_integratora na broj integrator blokova
     '''
     obradjen_niz = copy(opsim.niz_blokova)
-    opsim.br_integratora = len([blok for blok in opsim.niz_blokova if blok.sifra_bloka==10])
+    opsim.br_integratora = len([obradjen_niz[i] for i in range(1,len(obradjen_niz)) if obradjen_niz[i].sifra_bloka==10])
     opsim.niz_rb_integratora = {}
     for i in range(1,opsim.br_integratora+1):
         opsim.niz_rb_integratora[i] = -1 #nije postavljen rbBloka ako je -1
     opsim
-    for blok in obradjen_niz:
+    for blok in obradjen_niz.values():
+        if blok==None:
+            continue
         if blok.sifra_bloka != 10:
             blok.rb_integratora = 0
         elif blok.sifra_bloka==10: #ako je blok integrator
-            u1_blok = obradjen_niz[blok.ulaz1-1]
-            u2_blok = obradjen_niz[blok.ulaz2-1]
-            u3_blok = obradjen_niz[blok.ulaz3-1]
+            u1_blok = obradjen_niz[blok.ulaz1]
+            u2_blok = obradjen_niz[blok.ulaz2]
+            u3_blok = obradjen_niz[blok.ulaz3]
             if (u1_blok!=None and u1_blok.sifra_bloka==10) or (u2_blok!=None and u2_blok.sifra_bloka==10) or (u3_blok!=None and u3_blok.sifra_bloka==10):
                 blok.rb_integratora=2
                 opsim.niz_rb_integratora[blok.rb_integratora]=blok.rb_bloka
@@ -318,47 +316,51 @@ def obradi_niz_blokova(opsim:OpcijeSimulacije):
                 opsim.niz_rb_integratora[blok.rb_integratora]=blok.rb_bloka
     opsim.niz_obradjen = obradjen_niz
 
-def sortiraj_niz(opcije: OpcijeSimulacije):
+def sortiraj_niz(opsim: OpcijeSimulacije):
     '''
     funkcija sortira blokove po zadatom algoritmu, tako da blokovi ciji su ulazi poznati stoje na pocetku
     '''
-    opcije.br_blokova = len(opcije.niz_obradjen)
-    # print(opcije.br_blokova)
-    opcije.niz_sortiran = []
     br_sortiranih = 0
 
     #postavljanje konstanti na prvo mesto 
-    for i in range(opcije.br_blokova):
-        if opcije.niz_obradjen[i].rb_bloka != 0 and opcije.niz_obradjen[i].sifra_bloka == sifre["K"]:
+    for blok in opsim.niz_obradjen.values():
+        if blok==None:
+            continue
+        if blok.rb_bloka != 0 and blok.sifra_bloka == sifre["K"]:
             br_sortiranih += 1
-            opcije.niz_sortiran.append(opcije.niz_obradjen[i])
-            opcije.niz_obradjen[i].sortiran = True
+            opsim.niz_sortiran[br_sortiranih]= blok
+            blok.sortiran = True
     while True:
-        if i== opcije.br_blokova and not ponovo:
-            break
-        i = 0
+        i = 1
         ponovo = False
-        while i < opcije.br_blokova and not ponovo:
-            if not opcije.niz_obradjen[i].sortiran:
+        while i <= opsim.br_blokova and not ponovo:
+            if not opsim.niz_obradjen[i].sortiran and opsim.niz_obradjen[i].rb_bloka!=0:
+                ulaz1 = opsim.niz_obradjen[i].ulaz1
+                ulaz2 = opsim.niz_obradjen[i].ulaz2
+                ulaz3 = opsim.niz_obradjen[i].ulaz3
+                #kao ulaz se dobije redni br bloka, redni brojevi pocinju od 1 ili nula ako ne postoji
+                if ulaz1!=0:
+                    uslov1 = opsim.niz_obradjen[ulaz1].sifra_bloka in [sifre["I"], sifre["U"]] or opsim.niz_obradjen[ulaz1].sortiran or ulaz1 in [0, opsim.br_blokova]
+                else: uslov1 = True
+                if ulaz2!=0:
+                    uslov2 = opsim.niz_obradjen[ulaz2].sifra_bloka in [sifre["I"], sifre["U"]] or opsim.niz_obradjen[ulaz2].sortiran or ulaz2 in [0, opsim.br_blokova]
+                else: uslov2=True
+                if ulaz3!=0:
+                    uslov3 = opsim.niz_obradjen[ulaz3].sifra_bloka in [sifre["I"], sifre["U"]] or opsim.niz_obradjen[ulaz3].sortiran or ulaz3 in [0, opsim.br_blokova]
+                else: uslov3 = True
 
-                ulaz1 = opcije.niz_obradjen[i].ulaz1
-                ulaz2 = opcije.niz_obradjen[i].ulaz2
-                ulaz3 = opcije.niz_obradjen[i].ulaz3
-                #kao ulaz se dobije redni br bloka, redni brojevi pocinju od 1 
-                #indeksi blokova u obradjeni_niz pocinju od 0
-                #zato ulazN-1
-                uslov1 = opcije.niz_obradjen[ulaz1-1].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz1-1].sortiran or ulaz1 in [0, opcije.br_blokova]
-                uslov2 = opcije.niz_obradjen[ulaz2-1].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz2-1].sortiran or ulaz2 in [0, opcije.br_blokova]
-                uslov3 = opcije.niz_obradjen[ulaz3-1].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz3-1].sortiran or ulaz3 in [0, opcije.br_blokova]
                 if uslov1 and uslov2 and uslov3:
                     ponovo = True
                     br_sortiranih += 1
-                    opcije.niz_sortiran.append(opcije.niz_obradjen[i])
-                    opcije.niz_obradjen[i].sortiran = True
+                    opsim.niz_sortiran[br_sortiranih]=opsim.niz_obradjen[i]
+                    opsim.niz_obradjen[i].sortiran = True
                 else:
                     ponovo = False
             if not ponovo:
                 i += 1
+        if br_sortiranih==opsim.br_blokova:
+                    break
+            
 
 def upisi_izlaz(opsim: OpcijeSimulacije, brojac, izlaz):
     opsim.niz_izlaza[brojac] = izlaz
@@ -381,18 +383,18 @@ def postavi_pocetne_izlaze(opsim:OpcijeSimulacije):
         opsim.vektorZ[i] = 0.0
 
     niz_blokova = opsim.niz_sortiran
-    for blok in niz_blokova:
+    for blok in niz_blokova.values():
+        if blok==None:continue
         p1 = blok.par1
         p2 = blok.par2
         p3 = blok.par3
 
         #u pomu{N} se upisuje vrednost izlaza za rbr blok ulaza
-        pomu1 = opsim.niz_obradjen[blok.rb_bloka-1].ulaz1
+        pomu1 = opsim.niz_obradjen[blok.rb_bloka].ulaz1
         u1 = 0.0 if pomu1 == 0 else opsim.niz_izlaza[pomu1]
-        #ne mora blok.rb_bloka-1 jer je niz_izlaza dict koji ide od 1 do brBlokova
-        pomu2 = opsim.niz_obradjen[blok.rb_bloka-1].ulaz2
+        pomu2 = opsim.niz_obradjen[blok.rb_bloka].ulaz2
         u2 = 0.0 if pomu2 == 0 else opsim.niz_izlaza[pomu2]
-        pomu3 = opsim.niz_obradjen[blok.rb_bloka-1].ulaz3
+        pomu3 = opsim.niz_obradjen[blok.rb_bloka].ulaz3
         u3 = 0.0 if pomu3 == 0 else opsim.niz_izlaza[pomu3]
         izlaz = 0
 
@@ -411,10 +413,6 @@ def postavi_pocetne_izlaze(opsim:OpcijeSimulacije):
             case 10: 
                 izlaz=p1
                 integrator(p2,p3,u1,u2,u3,opsim,blok.rb_integratora)
-                print("Integrator: \n")
-                print(blok)
-                print("VektorY")
-                print(opsim.vektorY)
             case 11: izlaz=generatorSlucajnihBrojeva()
             case 12: izlaz=p1
             case 13: izlaz=ogranicavac(p1, p2, u1)
