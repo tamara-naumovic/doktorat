@@ -34,7 +34,8 @@ def main():
 
     sim.racunaj(opcije)
     # print(json.dumps(opcije.matrica_izlaza, indent=4))
-
+    print("----------------Matrica izlaza-------------------")
+    print(json.dumps(opcije.matrica_izlaza, indent=4))
 
     # print("----------------Izlazi-------------------")
     # print(opcije.niz_izlaza)    

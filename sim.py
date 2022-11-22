@@ -248,7 +248,7 @@ def incijalizuj_sve(opsim:OpcijeSimulacije, brElemenata):
     #postavljen br_blokovana na brElemenata
     opsim.br_blokova = brElemenata
     #inicijalizacija matrice izlaza
-    opsim.matrica_izlaza = {} 
+    opsim.matrica_izlaza = {}
     #inicijalizacija niza izlaza
     opsim.niz_izlaza = {}
     for i in range(1, opsim.br_blokova+1):
@@ -452,7 +452,7 @@ def racunaj(opcije:OpcijeSimulacije):
         postavi_pocetne_izlaze(opcije)
         print("----------------Pocetni izlazi-------------------")
         print(opcije.niz_izlaza,sep="\n")
-        opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= opcije.niz_izlaza
+        opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= (copy(opcije.niz_izlaza))
         print(f"Prva matrica:{opcije.matrica_izlaza} ")
 
     for i in range(1,opcije.br_integratora+1):
@@ -498,7 +498,7 @@ def racunaj(opcije:OpcijeSimulacije):
         for pomprom in range(1, opcije.br_integratora+1):
             opcije.vektorY[pomprom] = opcije.vektorZ[pomprom]+(1/6)*(opcije.nizK[pomprom]["k1"]+2*opcije.nizK[pomprom]["k2"]+2*opcije.nizK[pomprom]["k3"]+opcije.interval_integracije*opcije.vektorX[pomprom])
         pola_intervala(opcije)
-        opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= opcije.niz_izlaza
+        opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= copy(opcije.niz_izlaza)
         print(opcije.niz_izlaza)
 
         if(opcije.trenutno_vreme>opcije.duzina_simulacije):
