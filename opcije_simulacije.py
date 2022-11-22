@@ -19,9 +19,10 @@ class OpcijeSimulacije():
     br_blokova:int= 0
     br_integratora:int = 0
     niz_rb_integratora:dict[int,int] = None
-    vektorX:list = None #cuva vrednosti svih integratora
-    vektorY:list = None # y(n+1)
-    vektorZ:list = None # y(n)
+    #vektori postavljeni na dict da bi imali vrednosti od 1 do br intergratora, umesto da 0 preskacemo
+    vektorX:dict[int,float] = None #cuva vrednosti svih integratora
+    vektorY:dict[int,float] = None # y(n+1)
+    vektorZ:dict[int,float] = None # y(n)
     nizK:list = None
     '''
         tabela_konfiguracije se dobija u vidu csv fajla
