@@ -10,11 +10,11 @@ class OpcijeSimulacije():
     pola_intervala_integracije:float = 0
     duzina_simulacije:int = 0
     trenutno_vreme:float =0
-    niz_blokova:list[CSMPBlok] = None
-    niz_sortiran:list[CSMPBlok] = None
-    niz_obradjen:list[CSMPBlok] = None
+    niz_blokova:dict[int,list[CSMPBlok]] = None
+    niz_sortiran:dict[int,list[CSMPBlok]] = None
+    niz_obradjen:dict[int,list[CSMPBlok]] = None
     niz_izlaza: dict[int,float] = None #pomocni izlazi za neki interval integracije
-    matrica_izlaza:dict[str,list] = None #matrica svih izlaza za sve intervale intergracije
+    # matrica_izlaza:dict[str,list] = None #matrica svih izlaza za sve intervale intergracije
     br_konstanti:int = 0
     br_blokova:int= 0
     br_integratora:int = 0
@@ -23,7 +23,7 @@ class OpcijeSimulacije():
     vektorX:dict[int,float] = None #cuva vrednosti svih integratora
     vektorY:dict[int,float] = None # y(n+1)
     vektorZ:dict[int,float] = None # y(n)
-    nizK:list = None
+    nizK:dict[int,list] = None
     '''
         tabela_konfiguracije se dobija u vidu csv fajla
         i konvertuje se u listu rečnika

@@ -147,7 +147,7 @@ def pozitivniOgranicavac(u1):
 #integratoru treba opsim jer upisuje u vektorY
 def integrator(p2,p3,u1,u2,u3, opsim:OpcijeSimulacije, rbInteg):
     # blok_intg = opsim.niz_sortiran[brojac]
-    opsim.vektorY[rbInteg] = u1+p2*u2+p3*u3
+    opsim.vektorX[rbInteg] = u1+p2*u2+p3*u3
     # return True sta integrator da vrati kao izlaz
 
 #pitati profesora za>
@@ -233,7 +233,7 @@ def wye(p1,p2,u1,u2,pomUl1,sledeciBlok):
 #             self.izracunaj(sledeciBlok)
 
 def incijalizuj_sve(opsim:OpcijeSimulacije, brElemenata):
-    #inicijalizacija niz_blokova
+    #inicijalizacija niz_blokova, niz_obradjen, niz_sortiran
     opsim.niz_blokova = {}
     opsim.niz_obradjen = {}
     opsim.niz_sortiran = {}
@@ -245,7 +245,24 @@ def incijalizuj_sve(opsim:OpcijeSimulacije, brElemenata):
         opsim.niz_blokova[i+1] = []
         opsim.niz_obradjen[i+1] = []
         opsim.niz_sortiran[i+1] = []
+    #postavljen br_blokovana na brElemenata
     opsim.br_blokova = brElemenata
+    #inicijalizacija matrice izlaza
+    opsim.matrica_izlaza = {} 
+    #inicijalizacija niza izlaza
+    opsim.niz_izlaza = {}
+    for i in range(1, opsim.br_blokova+1):
+        opsim.niz_izlaza[i]=0.0 
+    #inicijalizacije vektora X Y Z
+    opsim.vektorX = {}
+    opsim.vektorY = {}
+    opsim.vektorZ = {}
+    for i in range(1, opsim.br_integratora+1):
+        opsim.vektorX[i] = 0.0
+        opsim.vektorY[i] = 0.0
+        opsim.vektorZ[i] = 0.0
+    opsim.nizK = {}
+    
     
 
 def ucitaj_blokove( opsim:OpcijeSimulacije):
@@ -366,22 +383,6 @@ def upisi_izlaz(opsim: OpcijeSimulacije, brojac, izlaz):
     opsim.niz_izlaza[brojac] = izlaz
     
 def postavi_pocetne_izlaze(opsim:OpcijeSimulacije):
-    opsim.matrica_izlaza = {} #inicjalizovana matrica izlaza
-    opsim.matrica_izlaza["0"] = [] #prazan niz pocetnih izlaza
-    opsim.niz_izlaza = {} #pocetni niz izlaza za jednu vremensku jedinicu
-    #inicijalizacija niza na 0, kako ne bi bacao exeption
-    for i in range(1, opsim.br_blokova+1):
-        opsim.niz_izlaza[i]=0.0 
-
-    #inicijalizacije vektora X Y Z
-    opsim.vektorX = {}
-    opsim.vektorY = {}
-    opsim.vektorZ = {}
-    for i in range(1, opsim.br_integratora+1):
-        opsim.vektorX[i] = 0.0
-        opsim.vektorY[i] = 0.0
-        opsim.vektorZ[i] = 0.0
-
     niz_blokova = opsim.niz_sortiran
     for blok in niz_blokova.values():
         if blok==None:continue
@@ -443,82 +444,133 @@ def racunaj(opcije:OpcijeSimulacije):
         "k2":0,
         "k3":0
     }
-    opcije.vektorX = [0 for i in range(opcije.br_integratora+1)]
-    opcije.vektorY = [0 for i in range(opcije.br_integratora+1)]
-    opcije.vektorZ = [0 for i in range(opcije.br_integratora+1)]
-    opcije.nizK = [copy(slog) for i in range(opcije.br_integratora+1)]
+    for i in range(1, opcije.br_integratora+1):
+        opcije.nizK[i] = copy(slog)
     opcije.pola_intervala_integracije = opcije.interval_integracije/2
-
-    postavi_pocetne_izlaze(opcije)
-    print("----------------Pocetni izlazi-------------------")
-    print(*opcije.niz_sortiran,sep="\n")
-
-    for i in range(opcije.br_integratora):
-        poma = opcije.niz_rb_integratora[i]
-        opcije.vektorY[i] = opcije.niz_obradjen[poma-1].par1
-    
     opcije.trenutno_vreme = 0.0
+    if opcije.trenutno_vreme == 0.0:
+        postavi_pocetne_izlaze(opcije)
+        print("----------------Pocetni izlazi-------------------")
+        print(opcije.niz_izlaza,sep="\n")
+        opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= opcije.niz_izlaza
+        print(f"Prva matrica:{opcije.matrica_izlaza} ")
+
+    for i in range(1,opcije.br_integratora+1):
+        poma = opcije.niz_rb_integratora[i]
+        opcije.vektorY[i] = opcije.niz_obradjen[poma].par1
+    
 
     pomep = (opcije.pola_intervala_integracije)/(opcije.interval_stampanja*2)
     #vrsta prekida
     #brtacstampe
     pola_intervala(opcije)
-    pass
+    # opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= opcije.niz_izlaza
+    while True:
+        for pomprom in range(1, opcije.br_integratora+1):
+            
+            opcije.vektorZ[pomprom] = opcije.vektorY[pomprom]
+            # print(opcije.nizK[pomprom]["k1"])
+            opcije.nizK[pomprom]["k1"] = opcije.interval_integracije*opcije.vektorX[pomprom]
+            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + 0.5*opcije.nizK[pomprom]["k1"]
+        
+        opcije.trenutno_vreme += opcije.pola_intervala_integracije
+        
+        pola_intervala(opcije)
+        
+        #kraj racuna f(Xn+1/2*h, Yn+1/2*k1)
+        
+        #druga polovina intervala: racuna se f(Xn+1/2*h, Yn+1/2*k2)
+        for pomprom in range(1, opcije.br_integratora+1):
+            opcije.nizK[pomprom]["k2"] = opcije.interval_integracije*opcije.vektorX[pomprom]
+            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + 0.5*opcije.nizK[pomprom]["k2"]
+        pola_intervala(opcije)
+        #kraj racuna f(Xn+1/2*h, Yn+1/2*k2)
+
+        #racuna se f(Xn+h, Yn+k3)
+        for pomprom in range(1, opcije.br_integratora+1):
+            opcije.nizK[pomprom]["k3"] = opcije.interval_integracije*opcije.vektorX[pomprom]
+            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + 0.5*opcije.nizK[pomprom]["k3"]
+        
+        opcije.trenutno_vreme+=opcije.pola_intervala_integracije
+        pola_intervala(opcije)
+        #kraj racuna f(Xn+h, Yn+k3)
+
+        for pomprom in range(1, opcije.br_integratora+1):
+            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom]+(1/6)*(opcije.nizK[pomprom]["k1"]+2*opcije.nizK[pomprom]["k2"]+2*opcije.nizK[pomprom]["k3"]+opcije.interval_integracije*opcije.vektorX[pomprom])
+        pola_intervala(opcije)
+        opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= opcije.niz_izlaza
+        print(opcije.niz_izlaza)
+
+        if(opcije.trenutno_vreme>opcije.duzina_simulacije):
+            break   
 
 def pola_intervala(opsim:OpcijeSimulacije):
     #prepisivanje vektorY u niz_izlaza
-    for i in range(opsim.br_integratora):
-        pombr = opsim.niz_rb_integratora[i]
-        opsim.niz_izlaza[pombr] = opsim.vektorY[pombr]
-    #brojac za sledeci blok u sortiranom nizu
-    sledeciBlok = opsim.br_konstanti
+    for i in range(1,opsim.br_integratora+1):
+        pombr = opsim.niz_rb_integratora[i] #ovo mu vrati 3
+        opsim.niz_izlaza[pombr] = opsim.vektorY[i]
+    #brojac za sledeci blok u sortiranom nizu nakon konstanti
+    sledeciBlok = opsim.br_konstanti+1
     izracunaj(sledeciBlok, opsim)
 
+
 def izracunaj(sledeciBlok, opsim:OpcijeSimulacije):
+    if(sledeciBlok>opsim.br_blokova):
+        return
+    
     blok = opsim.niz_sortiran[sledeciBlok]
-    brojac = sledeciBlok
     p1 = blok.par1
     p2 = blok.par2
     p3 = blok.par3
 
     #u pomu{N} se upisuje vrednost izlaza za rbr blok ulaza
-    pomu1 = opsim.niz_obradjen[blok.rb_bloka-1].ulaz1
-    u1 = 0.0 if pomu1 == 0 else opsim.niz_izlaza[blok.rb_bloka-1]
-    pomu2 = opsim.niz_obradjen[blok.rb_bloka-1].ulaz2
-    u2 = 0.0 if pomu2 == 0 else opsim.niz_izlaza[blok.rb_bloka-1]
-    pomu3 = opsim.niz_obradjen[blok.rb_bloka-1].ulaz3
-    u3 = 0.0 if pomu3 == 0 else opsim.niz_izlaza[blok.rb_bloka-1]
+    pomu1 = opsim.niz_obradjen[blok.rb_bloka].ulaz1
+    u1 = 0.0 if pomu1 == 0 else opsim.niz_izlaza[pomu1]
+    pomu2 = opsim.niz_obradjen[blok.rb_bloka].ulaz2
+    u2 = 0.0 if pomu2 == 0 else opsim.niz_izlaza[pomu2]
+    pomu3 = opsim.niz_obradjen[blok.rb_bloka].ulaz3
+    u3 = 0.0 if pomu3 == 0 else opsim.niz_izlaza[pomu3]
+    izlaz = 0
 
     match blok.sifra_bloka:
-            #sve funkcije koje traze izlaz nekog drugog bloka kao svoj ulaz, koriste funkciju vrati_blok() 
-            # u okviru fje se dobija konkretan blok sa njegovim parametrima, pa je moguce dobiti njegov konkretan izlaz 
-            case 1: izlaz=arkusTanges(p1,p2,p3,u1,u2,u3,brojac,opsim)
-            case 2: izlaz= signum(u1,brojac,opsim)
-            case 3: izlaz= kosinus(p1,p2,p3,u1,brojac,opsim)
-            case 4: izlaz= mrtvaZona(p1,p2,u1,brojac, opsim)
-            case 5: izlaz= delitelj(u1,u2,brojac,opsim)
-            case 6: izlaz= eksponent(p1,p2,p3,u1,brojac,opsim)
-            case 7: izlaz= generatorFja(p1,p2,p3,u1,brojac,opsim)
-            case 8: izlaz= pojacanje(p1,u1,brojac,opsim)
-            case 9: izlaz= kvadratniKoren(u1, brojac,opsim)
-            case 10: izlaz=integrator(p2,p3,u1,u2,u3,brojac,opsim)
-            case 11: izlaz= generatorSlucajnihBrojeva(brojac)
-            case 12:  p1
-            case 13: izlaz= ogranicavac(p1,p2,u1,brojac,opsim)
-            case 14: izlaz= apsolutnavrednost(u1,brojac,opsim)
-            case 15: izlaz= invertor(u1,brojac,opsim)
-            case 16: izlaz= negativniOgranicavac(u1, brojac, opsim)
-            case 17: izlaz= offset(p1,u1,brojac,opsim)
-            case 18: izlaz= pozitivniOgranicavac(u1,brojac,opsim)
-            case 19: izlaz= krajSimulacije(u1,u2,brojac,opsim)
-            case 20: izlaz= relej(u1,u2,u3,brojac,opsim)
-            case 21: izlaz= sinus(p1,p2,p3,u1,brojac,opsim)
-            case 22: izlaz= generatorImpulsa(p1,u1, brojac, opsim)
-            case 23: izlaz=jedinicnoKasnjenje(p1,p2,u1,brojac,opsim) #pogledati validnost potpisa ove funkcije
-            case 24: izlaz= vacuous(sledeciBlok) #proveriti
-            case 25: izlaz= opsim.trenutno_vreme
-            case 26: izlaz= sabirac(p1,p2,p3,u1,u2,u3,brojac,opsim)
-            case 27: izlaz= mnozac(u1,u2,brojac,opsim)
-            case 28: izlaz= wye(p1,p2,u1,u2,pomu1,sledeciBlok,brojac,opsim) #proveriti
-            case 0: izlaz= kolozadrske(p1,p2,u1,u2,brojac,opsim)
-    pass
+        #sve funkcije koje traze izlaz nekog drugog bloka kao svoj ulaz, koriste funkciju vrati_blok() 
+        # u okviru fje se dobija konkretan blok sa njegovim parametrima, pa je moguce dobiti njegov konkretan izlaz 
+        case 1: izlaz=arkusTanges(p1, p2,p3,u1)
+        case 2: izlaz=signum(u1)
+        case 3: izlaz=kosinus(p1, p2, p3,u1)
+        case 4: izlaz=mrtvaZona(p1, p2, u1)
+        case 5: izlaz=delitelj(u1, u2)
+        case 6: izlaz=eksponent(p1, p2, p3, u1)
+        case 7: izlaz=generatorFja(p1, p2, p3, u1)
+        case 8: izlaz=pojacanje(p1, u1)
+        case 9: izlaz=kvadratniKoren(u1)
+        case 10: integrator(p2,p3,u1,u2,u3,opsim,blok.rb_integratora)
+        case 11: izlaz=generatorSlucajnihBrojeva()
+        case 12: izlaz=p1
+        case 13: izlaz=ogranicavac(p1, p2, u1)
+        case 14: izlaz=apsolutnavrednost(u1)
+        case 15: izlaz=invertor(u1)
+        case 16: izlaz=negativniOgranicavac(u1)
+        case 17: izlaz=offset(p1, u1)
+        case 18: izlaz=pozitivniOgranicavac(u1)
+        case 19: izlaz=krajSimulacije(u1, u2)
+        case 20: izlaz=relej(u1, u2, u3)
+        case 21: izlaz=sinus(p1, p2, p3, u1)
+        case 22: izlaz=generatorImpulsa(p1. u1)
+        case 23: izlaz=jedinicnoKasnjenje(p1, p2, u1) #pogledati validnost potpisa ove funkcije
+        case 24: izlaz=vacuous(blok) #proveriti
+        case 25: izlaz=opsim.trenutno_vreme
+        case 26: izlaz=sabirac(p1, p2, p3,u1, u2, u3 )
+        case 27: izlaz=mnozac(u1, u2)
+        case 28: izlaz=wye(p1, p2, u1, u2, blok, blok ) #proveriti
+        case 0: izlaz=kolozadrske(p1, p2, u1, u2)
+    if blok.sifra_bloka!=10:
+        upisi_izlaz(opsim, blok.rb_bloka, izlaz)
+    
+    if(sledeciBlok<=opsim.br_blokova):
+        sledeciBlok+=1
+        izracunaj(sledeciBlok, opsim)
+
+    else:
+        if(sledeciBlok>opsim.br_blokova):
+            print("Greska. Kraj?")

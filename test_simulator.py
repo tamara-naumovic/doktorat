@@ -2,7 +2,7 @@ from opcije_simulacije import OpcijeSimulacije
 import sim, json, pprint
 
 def main():
-    opcije = OpcijeSimulacije("test_data/tk2_2.csv", 0.1, 0.1, 10)
+    opcije = OpcijeSimulacije(tabela_konfiguracije="test_data/tk2_2.csv", interval_stampanja= 0.1, interval_integracije= 0.1, duzina_simulacije= 5)
     print("----------------Niz blokova-------------------")
     sim.ucitaj_blokove(opcije)
     print(json.dumps(opcije.niz_blokova, default=print))
@@ -22,12 +22,19 @@ def main():
     # sim.generisi_izlaz_indekse(opcije)
     # # # print(json.dumps(opcije.niz_izlaza, indent=2))
 
-    print("----------------Pocetni izlazi-------------------")
-    sim.postavi_pocetne_izlaze(opcije)
-    print(opcije.niz_izlaza,sep="\n")
+    # print("----------------Pocetni izlazi-------------------")
+    # sim.postavi_pocetne_izlaze(opcije)
+    # print(opcije.niz_izlaza,sep="\n")
     
-    print("----------------Vektory Y-------------------")
-    print(opcije.vektorY)
+    # print("----------------Vektory X-------------------")
+    # print(opcije.vektorX)
+    print("----------------Br integratora-------------------")
+    print(opcije.br_integratora)
+    print("----------------Racunaj-------------------")
+
+    sim.racunaj(opcije)
+    # print(json.dumps(opcije.matrica_izlaza, indent=4))
+
 
     # print("----------------Izlazi-------------------")
     # print(opcije.niz_izlaza)    
