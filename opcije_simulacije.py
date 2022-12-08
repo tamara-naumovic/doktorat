@@ -8,7 +8,7 @@ class OpcijeSimulacije():
     interval_integracije:float = 0
     interval_stampanja:float = 0 
     pola_intervala_integracije:float = 0
-    duzina_simulacije:int = 0
+    duzina_simulacije:float = 0.0
     trenutno_vreme:float =0
     niz_blokova:dict[int,list[CSMPBlok]] = None
     niz_sortiran:dict[int,list[CSMPBlok]] = None
@@ -25,6 +25,14 @@ class OpcijeSimulacije():
     vektorY:dict[int,float] = None # y(n+1)
     vektorZ:dict[int,float] = None # y(n)
     nizK:dict[int,list] = None
+    vrsta_prekida:dict[int,str] = None
+    # vrsta_prekida = {
+    # 0:nemarac,
+    # 1:prvapol
+    # 2:drugapol
+    # 3:quit
+    # 4:greska
+    # }
     '''
         tabela_konfiguracije se dobija u vidu csv fajla
         i konvertuje se u listu rečnika
