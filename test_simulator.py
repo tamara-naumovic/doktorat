@@ -2,7 +2,7 @@ from opcije_simulacije import OpcijeSimulacije
 import sim, json, pprint
 
 def main():
-    opcije = OpcijeSimulacije(tabela_konfiguracije="test_data/tk6.csv", interval_stampanja= 0.1, interval_integracije= 0.1, duzina_simulacije= 10)
+    opcije = OpcijeSimulacije(tabela_konfiguracije="test_data/tk1_quit.csv", interval_stampanja= 0.1, interval_integracije= 0.1, duzina_simulacije= 10)
     print("----------------Niz blokova-------------------")
     sim.ucitaj_blokove(opcije)
     print(json.dumps(opcije.niz_blokova, default=print))
