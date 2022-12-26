@@ -83,8 +83,11 @@ def invertor(u1):
     return izlaz+0.0
 
 def kvadratniKoren(u1):
-    izlaz=sqrt(u1)
-    return izlaz+0.0
+    if u1>=0:
+        izlaz=sqrt(u1)
+        return izlaz+0.0
+    else:
+        return False
 
 def offset(p1,u1):
     izlaz=p1+u1
@@ -115,7 +118,7 @@ def arkusTanges(p1,p2,p3,u1):
         izlaz=p1*atan(p2*u1+p3)
         return izlaz+0.0
     else: 
-        print("Arkus tanges je negativan") #dodati obradu grešaka
+        # print("Arkus tanges je negativan") #dodati obradu grešaka
         return False
 
 def eksponent(p1,p2,p3,u1):
@@ -203,7 +206,11 @@ def kolozadrske(p1,p2,u1,u2):
 
 #
 def krajSimulacije(u1,u2):
-    pass
+    if (u2<u1):
+        return True
+    else:
+        return False
+    
 #     if u2<u1:
 #         self.VrstaPrekida['tip'] = "KrajQuit"
 #         self.VrstaPrekida['poruka'] = "Kraj simulacije od strane Quit elementa."
@@ -260,7 +267,14 @@ def incijalizuj_sve(opsim:OpcijeSimulacije, brElemenata):
         opsim.vektorY[i] = 0.0
         opsim.vektorZ[i] = 0.0
     opsim.nizK = {}
-    opsim.vrsta_prekida = {-1:"Nema greske"}
+    opsim.faza_rada = {
+        0: "nemarac",
+        1: "prvapol",
+        2: "drugapol",
+        3: "quit",
+        4: "greska",
+    }
+    opsim.vrsta_prekida = {"tip":-1, "poruka":"Nema greske"}
     
 
 def ucitaj_blokove( opsim:OpcijeSimulacije):
@@ -403,15 +417,23 @@ def postavi_pocetne_izlaze(opsim:OpcijeSimulacije):
             case 1: 
                 izlaz=arkusTanges(p1, p2,p3,u1)
                 if izlaz==False:
-                    opsim.vrsta_prekida = {4:"Vrednost za ArcTan je negativna!"}
+                    opsim.vrsta_prekida = {"tip": opsim.faza_rada[4], "poruka":"Vrednost za ArcTan je negativna!"}
             case 2: izlaz=signum(u1)
             case 3: izlaz=kosinus(p1, p2, p3,u1)
             case 4: izlaz=mrtvaZona(p1, p2, u1)
-            case 5: izlaz=delitelj(u1, u2)
+            case 5: 
+                izlaz=delitelj(u1, u2)
+                if izlaz==False:
+                    opsim.vrsta_prekida = {"tip": opsim.faza_rada[4], "poruka":"Drugi ulaz u delitelj je 0!"}
+
             case 6: izlaz=eksponent(p1, p2, p3, u1)
             case 7: izlaz=generatorFja(p1, p2, p3, u1)
             case 8: izlaz=pojacanje(p1, u1)
-            case 9: izlaz=kvadratniKoren(u1)
+            case 9: 
+                izlaz=kvadratniKoren(u1)
+                if izlaz==False:
+                    opsim.vrsta_prekida = {"tip": opsim.faza_rada[4], "poruka":"Ulaz u kvadratni koren je negativan!"}
+
             case 10: 
                 izlaz=p1
                 integrator(p2,p3,u1,u2,u3,opsim,blok.rb_integratora)
@@ -423,7 +445,13 @@ def postavi_pocetne_izlaze(opsim:OpcijeSimulacije):
             case 16: izlaz=negativniOgranicavac(u1)
             case 17: izlaz=offset(p1, u1)
             case 18: izlaz=pozitivniOgranicavac(u1)
-            case 19: izlaz=krajSimulacije(u1, u2)
+            case 19: 
+                izlaz=krajSimulacije(u1, u2)
+                if izlaz==True:
+                    print("Usao u QUIT")
+                    print(opsim.niz_izlaza)
+                    opsim.vrsta_prekida = {"tip": opsim.faza_rada[3], "poruka":"Kraj simulacije od strane Quit elementa."}
+
             case 20: izlaz=relej(u1, u2, u3)
             case 21: izlaz=sinus(p1, p2, p3, u1)
             case 22: izlaz=generatorImpulsa(p1. u1)
@@ -462,11 +490,13 @@ def racunaj(opcije:OpcijeSimulacije):
     
 
     pomep = (opcije.pola_intervala_integracije)/(opcije.interval_stampanja*2)
-    #vrsta prekida
+    opcije.vrsta_prekida={"tip":opcije.faza_rada[0],"poruka":"Nema rac"}
     #brtacstampe
     pola_intervala(opcije)
     # opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= opcije.niz_izlaza
     while True:
+        opcije.vrsta_prekida={"tip":opcije.faza_rada[1],"poruka":"Prva Pol"}
+
         for pomprom in range(1, opcije.br_integratora+1):
             
             opcije.vektorZ[pomprom] = opcije.vektorY[pomprom]+0.0
@@ -481,6 +511,8 @@ def racunaj(opcije:OpcijeSimulacije):
         #kraj racuna f(Xn+1/2*h, Yn+1/2*k1)
         
         #druga polovina intervala: racuna se f(Xn+1/2*h, Yn+1/2*k2)
+        opcije.vrsta_prekida={"tip":opcije.faza_rada[2],"poruka":"Druga Pol"}
+        
         for pomprom in range(1, opcije.br_integratora+1):
             opcije.nizK[pomprom]["k2"] = opcije.interval_integracije*opcije.vektorX[pomprom]+0.0
             opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + 0.5*opcije.nizK[pomprom]["k2"]+0.0
@@ -500,10 +532,18 @@ def racunaj(opcije:OpcijeSimulacije):
             opcije.vektorY[pomprom] = opcije.vektorZ[pomprom]+(1.0/6.0)*(opcije.nizK[pomprom]["k1"]+2.0*opcije.nizK[pomprom]["k2"]+2.0*opcije.nizK[pomprom]["k3"]+opcije.interval_integracije*opcije.vektorX[pomprom])
         pola_intervala(opcije)
         opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= copy(opcije.niz_izlaza)
-        print(opcije.niz_izlaza)
-
+        # print(opcije.niz_izlaza)
+        if(opcije.vrsta_prekida["tip"] in [opcije.faza_rada[3],opcije.faza_rada[4]]):
+            print("-------------------Kraj----------------")
+            print(f"Tip prekida: {opcije.vrsta_prekida['tip']}")   
+            print(f"Poruka: {opcije.vrsta_prekida['poruka']}")   
+            break
         if(opcije.trenutno_vreme>opcije.duzina_simulacije):
-            break   
+            print("Kraj simulacije u odnosu na vreme")
+            print(f"Tip prekida: {opcije.vrsta_prekida['tip']}")   
+            print(f"Poruka: {opcije.vrsta_prekida['poruka']}")   
+            break
+        
 
 def pola_intervala(opsim:OpcijeSimulacije):
     #prepisivanje vektorY u niz_izlaza
@@ -536,7 +576,10 @@ def izracunaj(sledeciBlok, opsim:OpcijeSimulacije):
     match blok.sifra_bloka:
         #sve funkcije koje traze izlaz nekog drugog bloka kao svoj ulaz, koriste funkciju vrati_blok() 
         # u okviru fje se dobija konkretan blok sa njegovim parametrima, pa je moguce dobiti njegov konkretan izlaz 
-        case 1: izlaz=arkusTanges(p1, p2,p3,u1)
+        case 1: 
+            izlaz=arkusTanges(p1, p2,p3,u1)
+            if izlaz==False:
+                opsim.vrsta_prekida = {"tip": opsim.faza_rada[4], "poruka":"Vrednost za ArcTan je negativna!"}
         case 2: izlaz=signum(u1)
         case 3: izlaz=kosinus(p1, p2, p3,u1)
         case 4: izlaz=mrtvaZona(p1, p2, u1)
@@ -544,7 +587,11 @@ def izracunaj(sledeciBlok, opsim:OpcijeSimulacije):
         case 6: izlaz=eksponent(p1, p2, p3, u1)
         case 7: izlaz=generatorFja(p1, p2, p3, u1)
         case 8: izlaz=pojacanje(p1, u1)
-        case 9: izlaz=kvadratniKoren(u1)
+        case 9: 
+                izlaz=kvadratniKoren(u1)
+                if izlaz==False:
+                    opsim.vrsta_prekida = {"tip": opsim.faza_rada[4], "poruka":"Ulaz u kvadratni koren je negativan!"}
+
         case 10: integrator(p2,p3,u1,u2,u3,opsim,blok.rb_integratora)
         case 11: izlaz=generatorSlucajnihBrojeva()
         case 12: izlaz=p1
@@ -554,7 +601,11 @@ def izracunaj(sledeciBlok, opsim:OpcijeSimulacije):
         case 16: izlaz=negativniOgranicavac(u1)
         case 17: izlaz=offset(p1, u1)
         case 18: izlaz=pozitivniOgranicavac(u1)
-        case 19: izlaz=krajSimulacije(u1, u2)
+        case 19: 
+                izlaz=krajSimulacije(u1, u2)
+                if izlaz==True:
+                    opsim.vrsta_prekida = {"tip": opsim.faza_rada[3], "poruka":"Kraj simulacije od strane Quit elementa."}
+
         case 20: izlaz=relej(u1, u2, u3)
         case 21: izlaz=sinus(p1, p2, p3, u1)
         case 22: izlaz=generatorImpulsa(p1. u1)
@@ -571,7 +622,6 @@ def izracunaj(sledeciBlok, opsim:OpcijeSimulacije):
     if(sledeciBlok<=opsim.br_blokova):
         sledeciBlok+=1
         izracunaj(sledeciBlok, opsim)
-
     else:
         if(sledeciBlok>opsim.br_blokova):
             print("Greska. Kraj?")
