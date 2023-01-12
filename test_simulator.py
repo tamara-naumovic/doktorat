@@ -1,8 +1,11 @@
 from opcije_simulacije import OpcijeSimulacije
-import sim, json, pprint
+import sim, json, pprint, time
 
 def main():
-    opcije = OpcijeSimulacije(tabela_konfiguracije="test_data/tk1_quit.csv", interval_stampanja= 0.1, interval_integracije= 0.1, duzina_simulacije= 10)
+    pocetak = time.time()
+    # opcije = OpcijeSimulacije(tabela_konfiguracije="test_data/tk11.csv", interval_stampanja= 0.1, interval_integracije= 0.1, duzina_simulacije= 10)
+    # student test
+    opcije = OpcijeSimulacije(tabela_konfiguracije="test_data/student_test/primer.csv", interval_stampanja= 0.1, interval_integracije= 0.1, duzina_simulacije= 10)
     print("----------------Niz blokova-------------------")
     sim.ucitaj_blokove(opcije)
     print(json.dumps(opcije.niz_blokova, default=print))
@@ -36,9 +39,13 @@ def main():
     # print(json.dumps(opcije.matrica_izlaza, indent=4))
     print("----------------Matrica izlaza-------------------")
     print(json.dumps(opcije.matrica_izlaza, indent=4))
-    with open('result.json', 'w') as fp:
+    file_name = opcije.tabela_konfiguracije.split("/")[-1][:-4]
+    result_file_name = f"result_data/result-{file_name}.json"
+    print(f"naziv fajla: {result_file_name}")
+    with open(result_file_name, 'w') as fp:
         json.dump(opcije.matrica_izlaza, fp)
-
+    kraj = time.time()
+    print(f"Duzina simulacije: {kraj-pocetak}")
     # print("----------------Izlazi-------------------")
     # print(opcije.niz_izlaza)    
     
