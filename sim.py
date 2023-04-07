@@ -8,6 +8,7 @@ from random import uniform
 # import scipy as sp
 # from scipy.integrate import solve_ivp
 import json, csv
+import decimal
 from copy import copy
 
 
@@ -239,6 +240,8 @@ def wye(p1,p2,u1,u2,pomUl1,sledeciBlok):
 
 def incijalizuj_sve(opsim:OpcijeSimulacije, brElemenata):
     #inicijalizacija niz_blokova, niz_obradjen, niz_sortiran
+    decimal.getcontext().prec = 5
+
     opsim.niz_blokova = {}
     opsim.niz_obradjen = {}
     opsim.niz_sortiran = {}
@@ -452,8 +455,6 @@ def postavi_pocetne_izlaze(opsim:OpcijeSimulacije):
             case 19: 
                 izlaz=krajSimulacije(u1, u2)
                 if izlaz==True:
-                    print("Usao u QUIT")
-                    print(opsim.niz_izlaza)
                     opsim.vrsta_prekida = {"tip": opsim.faza_rada[3], "poruka":"Kraj simulacije od strane Quit elementa."}
 
             case 20: izlaz=relej(u1, u2, u3)
@@ -480,9 +481,8 @@ def racunaj(opcije:OpcijeSimulacije):
     for i in range(1, opcije.br_integratora+1):
         opcije.nizK[i] = copy(slog)
     opcije.pola_intervala_integracije = opcije.interval_integracije/2.0
-    opcije.trenutno_vreme = 0.0
+    opcije.trenutno_vreme = decimal.Decimal('0.0')
     #zaokruzivanje vremena na broj decimala intervala integracije
-    time_rounder = int(len(str(opcije.interval_integracije).split(".")[1]))
     if opcije.trenutno_vreme == 0.0:
         postavi_pocetne_izlaze(opcije)
         print("----------------Pocetni izlazi-------------------")
@@ -507,11 +507,9 @@ def racunaj(opcije:OpcijeSimulacije):
             
             opcije.vektorZ[pomprom] = opcije.vektorY[pomprom]+0.0
             # print(opcije.nizK[pomprom]["k1"])
-            opcije.nizK[pomprom]["k1"] = opcije.interval_integracije*opcije.vektorX[pomprom]+0.0
+            opcije.nizK[pomprom]["k1"] =opcije.interval_integracije*opcije.vektorX[pomprom]+0.0
             opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + 0.5*opcije.nizK[pomprom]["k1"]+0.0
-        opcije.trenutno_vreme += opcije.pola_intervala_integracije+0.0
-        pom_t = round(opcije.trenutno_vreme,5)
-        opcije.trenutno_vreme = pom_t
+        opcije.trenutno_vreme += decimal.Decimal(str(opcije.pola_intervala_integracije))
         pola_intervala(opcije)
         
         #kraj racuna f(Xn+1/2*h, Yn+1/2*k1)
@@ -531,9 +529,8 @@ def racunaj(opcije:OpcijeSimulacije):
             opcije.nizK[pomprom]["k3"] = opcije.interval_integracije*opcije.vektorX[pomprom]+0.0
             opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + 0.5*opcije.nizK[pomprom]["k3"]+0.0
 
-        opcije.trenutno_vreme += opcije.pola_intervala_integracije+0.0
-        pom_t = round(opcije.trenutno_vreme,5)
-        opcije.trenutno_vreme = pom_t
+        opcije.trenutno_vreme += decimal.Decimal(str(opcije.pola_intervala_integracije)) 
+
         pola_intervala(opcije)
         #kraj racuna f(Xn+h, Yn+k3)
 
