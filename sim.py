@@ -481,6 +481,8 @@ def racunaj(opcije:OpcijeSimulacije):
         opcije.nizK[i] = copy(slog)
     opcije.pola_intervala_integracije = opcije.interval_integracije/2.0
     opcije.trenutno_vreme = 0.0
+    #zaokruzivanje vremena na broj decimala intervala integracije
+    time_rounder = int(len(str(opcije.interval_integracije).split(".")[1]))
     if opcije.trenutno_vreme == 0.0:
         postavi_pocetne_izlaze(opcije)
         print("----------------Pocetni izlazi-------------------")
@@ -507,9 +509,9 @@ def racunaj(opcije:OpcijeSimulacije):
             # print(opcije.nizK[pomprom]["k1"])
             opcije.nizK[pomprom]["k1"] = opcije.interval_integracije*opcije.vektorX[pomprom]+0.0
             opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + 0.5*opcije.nizK[pomprom]["k1"]+0.0
-        
         opcije.trenutno_vreme += opcije.pola_intervala_integracije+0.0
-        
+        pom_t = round(opcije.trenutno_vreme,5)
+        opcije.trenutno_vreme = pom_t
         pola_intervala(opcije)
         
         #kraj racuna f(Xn+1/2*h, Yn+1/2*k1)
@@ -520,6 +522,7 @@ def racunaj(opcije:OpcijeSimulacije):
         for pomprom in range(1, opcije.br_integratora+1):
             opcije.nizK[pomprom]["k2"] = opcije.interval_integracije*opcije.vektorX[pomprom]+0.0
             opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + 0.5*opcije.nizK[pomprom]["k2"]+0.0
+
         pola_intervala(opcije)
         #kraj racuna f(Xn+1/2*h, Yn+1/2*k2)
 
@@ -527,13 +530,16 @@ def racunaj(opcije:OpcijeSimulacije):
         for pomprom in range(1, opcije.br_integratora+1):
             opcije.nizK[pomprom]["k3"] = opcije.interval_integracije*opcije.vektorX[pomprom]+0.0
             opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + 0.5*opcije.nizK[pomprom]["k3"]+0.0
-        
-        opcije.trenutno_vreme+=opcije.pola_intervala_integracije
+
+        opcije.trenutno_vreme += opcije.pola_intervala_integracije+0.0
+        pom_t = round(opcije.trenutno_vreme,5)
+        opcije.trenutno_vreme = pom_t
         pola_intervala(opcije)
         #kraj racuna f(Xn+h, Yn+k3)
 
         for pomprom in range(1, opcije.br_integratora+1):
             opcije.vektorY[pomprom] = opcije.vektorZ[pomprom]+(1.0/6.0)*(opcije.nizK[pomprom]["k1"]+2.0*opcije.nizK[pomprom]["k2"]+2.0*opcije.nizK[pomprom]["k3"]+opcije.interval_integracije*opcije.vektorX[pomprom])
+
         pola_intervala(opcije)
         opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= copy(opcije.niz_izlaza)
         # print(opcije.niz_izlaza)
