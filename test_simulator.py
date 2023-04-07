@@ -5,7 +5,7 @@ def main():
     pocetak = time.time()
     # opcije = OpcijeSimulacije(tabela_konfiguracije="test_data/tk11.csv", interval_stampanja= 0.1, interval_integracije= 0.1, duzina_simulacije= 10)
     # student test
-    opcije = OpcijeSimulacije(tabela_konfiguracije="test_data/student_test/primer.csv", interval_stampanja= 0.1, interval_integracije= 0.1, duzina_simulacije= 10)
+    opcije = OpcijeSimulacije(tabela_konfiguracije="test_data/tk2.csv", interval_stampanja= 0.1, interval_integracije= 0.1, duzina_simulacije= 10)
     print("----------------Niz blokova-------------------")
     sim.ucitaj_blokove(opcije)
     print(json.dumps(opcije.niz_blokova, default=print))

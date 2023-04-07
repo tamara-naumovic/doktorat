@@ -1,7 +1,9 @@
 /docs
 /Include
 /Lib
+/rezultati
 /Scripts
+/testPodaci
 /share
 /__pycache__
 /test.json
@@ -9,3 +11,4 @@
 /rungetest.py
 /doktorat_test.txt
 /csmp-opis-koda.doc
+/Book1.xlsx
