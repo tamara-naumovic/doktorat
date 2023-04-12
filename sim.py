@@ -11,6 +11,7 @@ import json, csv
 import decimal
 from copy import copy
 
+dec_zero = decimal.Decimal('0.0')
 
 niz_izlaza:list = None
 sifre = {
@@ -241,7 +242,7 @@ def wye(p1,p2,u1,u2,pomUl1,sledeciBlok):
 
 def incijalizuj_sve(opcije:OpcijeSimulacije, brElemenata):
     #inicijalizacija niz_blokova, niz_obradjen, niz_sortiran
-    decimal.getcontext().prec = 10
+    decimal.getcontext().prec = opcije.preciznost
 
     opcije.niz_blokova = {}
     opcije.niz_obradjen = {}
@@ -261,7 +262,7 @@ def incijalizuj_sve(opcije:OpcijeSimulacije, brElemenata):
     #inicijalizacija niza izlaza
     opcije.niz_izlaza = {}
     for i in range(1, opcije.br_blokova+1):
-        opcije.niz_izlaza[i]=0.0 
+        opcije.niz_izlaza[i]=dec_zero
     #inicijalizacije vektora X Y Z
     opcije.vektorX = {}
     opcije.vektorY = {}
@@ -399,7 +400,7 @@ def sortiraj_niz(opcije: OpcijeSimulacije):
                     break
             
 
-def upisi_izlaz(opcije: OpcijeSimulacije, brojac, izlaz):
+def upisi_izlaz(opcije: OpcijeSimulacije, brojac, izlaz:decimal.Decimal):
     opcije.niz_izlaza[brojac] = izlaz
     
 def postavi_pocetne_izlaze(opcije:OpcijeSimulacije):
@@ -412,12 +413,13 @@ def postavi_pocetne_izlaze(opcije:OpcijeSimulacije):
 
         #u pomu{N} se upisuje vrednost izlaza za rbr blok ulaza
         pomu1 = opcije.niz_obradjen[blok.rb_bloka].ulaz1
-        u1 = decimal.Decimal('0') if pomu1 == 0 else decimal.Decimal(str(opcije.niz_izlaza[pomu1]))
+
+        u1 = dec_zero if pomu1 == 0 else opcije.niz_izlaza[pomu1]
         pomu2 = opcije.niz_obradjen[blok.rb_bloka].ulaz2
-        u2 = decimal.Decimal('0') if pomu2 == 0 else decimal.Decimal(str(opcije.niz_izlaza[pomu2]))
+        u2 = dec_zero if pomu2 == 0 else opcije.niz_izlaza[pomu2]
         pomu3 = opcije.niz_obradjen[blok.rb_bloka].ulaz3
-        u3 = decimal.Decimal('0') if pomu3 == 0 else decimal.Decimal(str(opcije.niz_izlaza[pomu3]))
-        izlaz = decimal.Decimal('0')
+        u3 = dec_zero if pomu3 == 0 else opcije.niz_izlaza[pomu3]
+        izlaz = dec_zero
 
         match blok.sifra_bloka:
             #sve funkcije koje traze izlaz nekog drugog bloka kao svoj ulaz, koriste funkciju vrati_blok() 
@@ -482,7 +484,7 @@ def racunaj(opcije:OpcijeSimulacije):
     for i in range(1, opcije.br_integratora+1):
         opcije.nizK[i] = copy(slog)
     opcije.pola_intervala_integracije = opcije.interval_integracije/decimal.Decimal('2')
-    opcije.trenutno_vreme = decimal.Decimal('0.0')
+    opcije.trenutno_vreme = dec_zero
     #zaokruzivanje vremena na broj decimala intervala integracije
     if opcije.trenutno_vreme == 0.0:
         postavi_pocetne_izlaze(opcije)
@@ -575,12 +577,12 @@ def izracunaj(sledeciBlok, opcije:OpcijeSimulacije):
     #u pomu{N} se upisuje vrednost izlaza za rbr blok ulaza
 
     pomu1 = opcije.niz_obradjen[blok.rb_bloka].ulaz1
-    u1 = decimal.Decimal('0') if pomu1 == 0 else decimal.Decimal(str(opcije.niz_izlaza[pomu1]))
+    u1 = dec_zero if pomu1 == 0 else opcije.niz_izlaza[pomu1]
     pomu2 = opcije.niz_obradjen[blok.rb_bloka].ulaz2
-    u2 = decimal.Decimal('0') if pomu2 == 0 else decimal.Decimal(str(opcije.niz_izlaza[pomu2]))
+    u2 = dec_zero if pomu2 == 0 else opcije.niz_izlaza[pomu2]
     pomu3 = opcije.niz_obradjen[blok.rb_bloka].ulaz3
-    u3 = decimal.Decimal('0') if pomu3 == 0 else decimal.Decimal(str(opcije.niz_izlaza[pomu3]))
-    izlaz = decimal.Decimal('0')
+    u3 = dec_zero if pomu3 == 0 else opcije.niz_izlaza[pomu3]
+    izlaz = dec_zero
 
     match blok.sifra_bloka:
         #sve funkcije koje traze izlaz nekog drugog bloka kao svoj ulaz, koriste funkciju vrati_blok() 
