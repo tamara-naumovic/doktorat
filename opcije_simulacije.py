@@ -30,7 +30,9 @@ class OpcijeSimulacije():
     vektorZ: dict[int, Decimal] = None  # y(n)
     nizK: dict[int, list] = None
     faza_rada: dict[int, str] = None
+    preciznost:int = 10
     vrsta_prekida = None
+
     '''
         tabela_konfiguracije se dobija u vidu csv fajla
         i konvertuje se u listu rečnika
