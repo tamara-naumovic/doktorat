@@ -8,8 +8,8 @@ def main():
     interv_s = decimal.Decimal('0.1')
     interv_i = decimal.Decimal('0.1')
     duzina_s = decimal.Decimal('10')
-    tabela_konf = "testPodaci/tk4.csv"
-    opcije = OpcijeSimulacije(tabela_konfiguracije=tabela_konf, interval_stampanja= interv_s, interval_integracije= interv_i, duzina_simulacije= duzina_s, preciznost=20)
+    tabela_konf = "testPodaci/termostat.csv"
+    opcije = OpcijeSimulacije(tabela_konfiguracije=tabela_konf, interval_stampanja= interv_s, interval_integracije= interv_i, duzina_simulacije= duzina_s, preciznost=6)
     print("----------------Niz blokova-------------------")
     sim.ucitaj_blokove(opcije)
     print(json.dumps(opcije.niz_blokova, default=print,cls=DecimalEncoder))
