@@ -3,6 +3,7 @@ from opcije_simulacije import OpcijeSimulacije
 from csmp_blok import CSMPBlok, from_dict_to_dataclass
 from math import sqrt, sin, cos, atan, exp, copysign
 from random import uniform
+import urllib.request
 # import numpy as np
 # import matplotlib.pyplot as plt
 # import scipy as sp
@@ -43,7 +44,9 @@ sifre = {
     "W": 26, #Sabirac
     "X": 27, #Mnozac
     "Y": 28, #Wye
-    "Z": 0, #KoloZadrske
+    "Z": 0, #KoloZadrske,
+    "uiot":29,
+    "oiot":30
 }
 
 
@@ -240,6 +243,28 @@ def wye(p1,p2,u1,u2,pomUl1,sledeciBlok):
 #             sledeciBlok=self.ObradjenNiz[pomUl1]["rbIntegratora"]
 #             self.izracunaj(sledeciBlok)
 
+def oiot(p1,p2,p3,u1):
+    url = f'{p1}?{p2}={u1}'
+    webUrl = urllib.request.urlopen(url)
+    data_json = json.loads(webUrl.read().decode('utf-8'))
+    izlaz = data_json[p3]
+    return izlaz
+
+def uiot(p1,p2):
+    # uiot je iot blok  ulaznog tipa
+    # to znači da ima daje input u simulaciju
+    # p1 - api link
+    # p2 - api data key
+    
+    webUrl = urllib.request.urlopen(p1)
+    data_json = json.loads(webUrl.read().decode('utf-8'))
+    while data_json.get('error'):
+        webUrl = urllib.request.urlopen(p1)
+        data_json = json.loads(webUrl.read().decode('utf-8'))
+    izlaz = data_json[p2]
+    return izlaz
+
+
 def incijalizuj_sve(opcije:OpcijeSimulacije, brElemenata):
     #inicijalizacija niz_blokova, niz_obradjen, niz_sortiran
     decimal.getcontext().prec = opcije.preciznost
@@ -292,13 +317,22 @@ def ucitaj_blokove( opcije:OpcijeSimulacije):
     with open(opcije.tabela_konfiguracije, mode='r') as csv_file:
         reader = csv.DictReader(csv_file,delimiter=',',quotechar='|')
         for row in reader:
+            if row["tip"]=="uiot" or row["tip"]=="oiot":
+               p1 =  row["p1"]
+               p2 =  row["p2"]
+               p3 =  row["p3"]
+            else:
+                p1 =  decimal.Decimal(row["p1"])
+                p2 =  decimal.Decimal(row["p2"])
+                p3 =  decimal.Decimal(row["p3"])
+
             red = {
                 'ulaz1':int(row["u1"]),
                 'ulaz2':int(row["u2"]),
                 'ulaz3':int(row["u3"]),
-                'par1':decimal.Decimal(row["p1"]),
-                'par2':decimal.Decimal(row["p2"]),
-                'par3':decimal.Decimal(row["p3"]),
+                'par1':p1,
+                'par2':p2,
+                'par3':p3,
                 'sortiran':False,
                 'tip':row["tip"],
                 'rb_bloka':int(row["rbr"]),
@@ -407,13 +441,13 @@ def postavi_pocetne_izlaze(opcije:OpcijeSimulacije):
     niz_blokova = opcije.niz_sortiran
     for blok in niz_blokova.values():
         if blok==None:continue
+
         p1 = blok.par1
         p2 = blok.par2
         p3 = blok.par3
 
         #u pomu{N} se upisuje vrednost izlaza za rbr blok ulaza
         pomu1 = opcije.niz_obradjen[blok.rb_bloka].ulaz1
-
         u1 = dec_zero if pomu1 == 0 else opcije.niz_izlaza[pomu1]
         pomu2 = opcije.niz_obradjen[blok.rb_bloka].ulaz2
         u2 = dec_zero if pomu2 == 0 else opcije.niz_izlaza[pomu2]
@@ -469,6 +503,8 @@ def postavi_pocetne_izlaze(opcije:OpcijeSimulacije):
             case 26: izlaz=sabirac(p1, p2, p3,u1, u2, u3 )
             case 27: izlaz=mnozac(u1, u2)
             case 28: izlaz=wye(p1, p2, u1, u2, blok, blok ) #proveriti
+            case 29: izlaz=uiot(p1, p2) #proveriti
+            case 30: izlaz=oiot(p1, p2, p3, u1) #proveriti
             case 0: izlaz=kolozadrske(p1, p2, u1, u2)
         upisi_izlaz(opcije, blok.rb_bloka, decimal.Decimal(str(izlaz)))       
 
@@ -626,6 +662,8 @@ def izracunaj(sledeciBlok, opcije:OpcijeSimulacije):
         case 26: izlaz=sabirac(p1, p2, p3,u1, u2, u3 )
         case 27: izlaz=mnozac(u1, u2)
         case 28: izlaz=wye(p1, p2, u1, u2, blok, blok ) #proveriti
+        case 29: izlaz=uiot(p1, p2) #proveriti
+        case 30: izlaz=oiot(p1, p2, p3, u1) #proveriti
         case 0: izlaz=kolozadrske(p1, p2, u1, u2)
     if blok.sifra_bloka!=10:
         upisi_izlaz(opcije, blok.rb_bloka, decimal.Decimal(str(izlaz)))
