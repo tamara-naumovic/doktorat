@@ -3,6 +3,7 @@ from opcije_simulacije import OpcijeSimulacije
 from csmp_blok import CSMPBlok, from_dict_to_dataclass
 from math import sqrt, sin, cos, atan, exp, copysign
 from random import uniform
+import urllib.request
 # import numpy as np
 # import matplotlib.pyplot as plt
 # import scipy as sp
@@ -11,6 +12,7 @@ import json, csv
 import decimal
 from copy import copy
 
+dec_zero = decimal.Decimal('0.0')
 
 niz_izlaza:list = None
 sifre = {
@@ -42,7 +44,9 @@ sifre = {
     "W": 26, #Sabirac
     "X": 27, #Mnozac
     "Y": 28, #Wye
-    "Z": 0, #KoloZadrske
+    "Z": 0, #KoloZadrske,
+    "uiot":29,
+    "oiot":30
 }
 
 class DecimalEncoder(json.JSONEncoder):
@@ -68,93 +72,94 @@ def podesi_sifru():
 
 def sabirac(p1,p2,p3,u1,u2,u3):
     izlaz=p1*u1+p2*u2+p3*u3
-    return izlaz+0.0
+    return izlaz
 
 def mnozac(u1,u2):
     izlaz = u1*u2
-    return izlaz+0.0
+    return izlaz
 
 def apsolutnavrednost(u1):
     izlaz=abs(u1)
-    return izlaz+0.0
+    return izlaz
 
 def delitelj(u1,u2):
     if u2!=0:
         izlaz=u1/u2
-        return izlaz+0.0
+        return izlaz
     else: return False
 
 def invertor(u1):
     izlaz=-u1
-    return izlaz+0.0
+    return izlaz
 
 def kvadratniKoren(u1):
     if u1>=0:
         izlaz=sqrt(u1)
-        return izlaz+0.0
+        return izlaz
     else:
         return False
 
 def offset(p1,u1):
     izlaz=p1+u1
-    return izlaz+0.0
+    return izlaz
 
 def pojacanje(p1,u1):
     izlaz=p1*u1
-    return izlaz+0.0
+    return izlaz
 
 def relej(u1,u2,u3):
     izlaz = u3 if u1<0 else u2
-    return izlaz+0.0
+    return izlaz
 
 def signum(u1):
     izlaz = 0 if u1==0 else copysign(1,u1)
-    return izlaz+0.0
+    return izlaz
 
 def sinus(p1,p2,p3,u1):
     izlaz=p1*sin(p2*u1 + p3)
-    return izlaz+0.0
+    return izlaz
 
 def kosinus(p1,p2,p3,u1):
     izlaz=p1*cos(p2*u1+p3)
-    return izlaz+0.0
+    return izlaz
 
 def arkusTanges(p1,p2,p3,u1):
     if (p2*u1+p3)>=0.0:
         izlaz=p1*atan(p2*u1+p3)
-        return izlaz+0.0
+        return izlaz
     else: 
         # print("Arkus tanges je negativan") #dodati obradu grešaka
         return False
 
 def eksponent(p1,p2,p3,u1):
     izlaz=p1*exp(p2*u1+p3)
-    return izlaz+0.0
+    return izlaz
 
 def mrtvaZona(p1,p2,u1,brojac,opcije:OpcijeSimulacije):
     #p1 donja granica, p2 gornja granica
     izlaz=0 if p1<u1<p2 else u1
-    return izlaz+0.0
+    return izlaz
 
 def generatorSlucajnihBrojeva(brojac, opcije:OpcijeSimulacije):
     izlaz = uniform(0,1)
-    return izlaz+0.0
+    return izlaz
 
 def ogranicavac(p1,p2,u1):
     izlaz = p1 if u1<p1 else p2 if u1<p2 else u1
-    return izlaz+0.0
+    return izlaz
 
 def negativniOgranicavac(u1):
     izlaz = 0 if u1<0 else u1
-    return izlaz+0.0
+    return izlaz
 
 def pozitivniOgranicavac(u1):
     izlaz = 0 if u1>0 else u1
-    return izlaz+0.0
+    return izlaz
 #integratoru treba opcije jer upisuje u vektorY
-def integrator(p2,p3,u1,u2,u3, opcije:OpcijeSimulacije, rbInteg):
+def integrator(p2:decimal.Decimal,p3:decimal.Decimal,u1:decimal.Decimal,u2:decimal.Decimal,u3:decimal.Decimal, opcije:OpcijeSimulacije, rbInteg):
     # blok_intg = opcije.niz_sortiran[brojac]
     opcije.vektorX[rbInteg] = u1+p2*u2+p3*u3
+
     # return True sta integrator da vrati kao izlaz
 
 #pitati profesora za>
@@ -184,7 +189,7 @@ def generatorFja(p1,p2,p3,u1):
 
 def generatorImpulsa(p1,u1):
     izlaz = 1 if u1>0 else 0
-    return izlaz+0.0
+    return izlaz
 
 #
 def jedinicnoKasnjenje(p1,p2,u1):
@@ -243,9 +248,31 @@ def wye(p1,p2,u1,u2,pomUl1,sledeciBlok):
 #             sledeciBlok=self.ObradjenNiz[pomUl1]["rbIntegratora"]
 #             self.izracunaj(sledeciBlok)
 
+def oiot(p1,p2,p3,u1):
+    url = f'{p1}?{p2}={u1}'
+    webUrl = urllib.request.urlopen(url)
+    data_json = json.loads(webUrl.read().decode('utf-8'))
+    izlaz = data_json[p3]
+    return izlaz
+
+def uiot(p1,p2):
+    # uiot je iot blok  ulaznog tipa
+    # to znači da ima daje input u simulaciju
+    # p1 - api link
+    # p2 - api data key
+    
+    webUrl = urllib.request.urlopen(p1)
+    data_json = json.loads(webUrl.read().decode('utf-8'))
+    while data_json.get('error'):
+        webUrl = urllib.request.urlopen(p1)
+        data_json = json.loads(webUrl.read().decode('utf-8'))
+    izlaz = data_json[p2]
+    return izlaz
+
+
 def incijalizuj_sve(opcije:OpcijeSimulacije, brElemenata):
     #inicijalizacija niz_blokova, niz_obradjen, niz_sortiran
-    decimal.getcontext().prec = 5
+    decimal.getcontext().prec = opcije.preciznost
 
     opcije.niz_blokova = {}
     opcije.niz_obradjen = {}
@@ -265,15 +292,15 @@ def incijalizuj_sve(opcije:OpcijeSimulacije, brElemenata):
     #inicijalizacija niza izlaza
     opcije.niz_izlaza = {}
     for i in range(1, opcije.br_blokova+1):
-        opcije.niz_izlaza[i]=0.0 
+        opcije.niz_izlaza[i]=dec_zero
     #inicijalizacije vektora X Y Z
     opcije.vektorX = {}
     opcije.vektorY = {}
     opcije.vektorZ = {}
     for i in range(1, opcije.br_integratora+1):
-        opcije.vektorX[i] = 0.0
-        opcije.vektorY[i] = 0.0
-        opcije.vektorZ[i] = 0.0
+        opcije.vektorX[i] = decimal.Decimal('0')
+        opcije.vektorY[i] = decimal.Decimal('0')
+        opcije.vektorZ[i] = decimal.Decimal('0')
     opcije.nizK = {}
     opcije.faza_rada = {
         0: "nemarac",
@@ -295,13 +322,22 @@ def ucitaj_blokove( opcije:OpcijeSimulacije):
     with open(opcije.tabela_konfiguracije, mode='r') as csv_file:
         reader = csv.DictReader(csv_file,delimiter=',',quotechar='|')
         for row in reader:
+            if row["tip"]=="uiot" or row["tip"]=="oiot":
+               p1 =  row["p1"]
+               p2 =  row["p2"]
+               p3 =  row["p3"]
+            else:
+                p1 =  decimal.Decimal(row["p1"])
+                p2 =  decimal.Decimal(row["p2"])
+                p3 =  decimal.Decimal(row["p3"])
+
             red = {
                 'ulaz1':int(row["u1"]),
                 'ulaz2':int(row["u2"]),
                 'ulaz3':int(row["u3"]),
-                'par1':float(row["p1"]),
-                'par2':float(row["p2"]),
-                'par3':float(row["p3"]),
+                'par1':p1,
+                'par2':p2,
+                'par3':p3,
                 'sortiran':False,
                 'tip':row["tip"],
                 'rb_bloka':int(row["rbr"]),
@@ -311,8 +347,8 @@ def ucitaj_blokove( opcije:OpcijeSimulacije):
             lista_dict.append(red)
     
 
-    with open("test.json", 'w') as outfile:
-        json.dump(lista_dict,outfile)
+    # with open("test.json", 'w') as outfile:
+    #     json.dump(lista_dict,outfile, cls=opcije.DecimalEncoder)
     
     #inicijalizacija 
     incijalizuj_sve(opcije, len(lista_dict))
@@ -403,25 +439,26 @@ def sortiraj_niz(opcije: OpcijeSimulacije):
                     break
             
 
-def upisi_izlaz(opcije: OpcijeSimulacije, brojac, izlaz):
-    opcije.niz_izlaza[brojac] = izlaz+0.0
+def upisi_izlaz(opcije: OpcijeSimulacije, brojac, izlaz:decimal.Decimal):
+    opcije.niz_izlaza[brojac] = izlaz
     
 def postavi_pocetne_izlaze(opcije:OpcijeSimulacije):
     niz_blokova = opcije.niz_sortiran
     for blok in niz_blokova.values():
         if blok==None:continue
-        p1 = blok.par1+0.0
-        p2 = blok.par2+0.0
-        p3 = blok.par3+0.0
+
+        p1 = blok.par1
+        p2 = blok.par2
+        p3 = blok.par3
 
         #u pomu{N} se upisuje vrednost izlaza za rbr blok ulaza
-        pomu1 = opcije.niz_obradjen[blok.rb_bloka].ulaz1+0.0
-        u1 = 0.0 if pomu1 == 0.0 else opcije.niz_izlaza[pomu1]
-        pomu2 = opcije.niz_obradjen[blok.rb_bloka].ulaz2+0.0
-        u2 = 0.0 if pomu2 == 0.0 else opcije.niz_izlaza[pomu2]
-        pomu3 = opcije.niz_obradjen[blok.rb_bloka].ulaz3+0.0
-        u3 = 0.0 if pomu3 == 0.0 else opcije.niz_izlaza[pomu3]
-        izlaz = 0.0
+        pomu1 = opcije.niz_obradjen[blok.rb_bloka].ulaz1
+        u1 = dec_zero if pomu1 == 0 else opcije.niz_izlaza[pomu1]
+        pomu2 = opcije.niz_obradjen[blok.rb_bloka].ulaz2
+        u2 = dec_zero if pomu2 == 0 else opcije.niz_izlaza[pomu2]
+        pomu3 = opcije.niz_obradjen[blok.rb_bloka].ulaz3
+        u3 = dec_zero if pomu3 == 0 else opcije.niz_izlaza[pomu3]
+        izlaz = dec_zero
 
         match blok.sifra_bloka:
             #sve funkcije koje traze izlaz nekog drugog bloka kao svoj ulaz, koriste funkciju vrati_blok() 
@@ -471,22 +508,24 @@ def postavi_pocetne_izlaze(opcije:OpcijeSimulacije):
             case 26: izlaz=sabirac(p1, p2, p3,u1, u2, u3 )
             case 27: izlaz=mnozac(u1, u2)
             case 28: izlaz=wye(p1, p2, u1, u2, blok, blok ) #proveriti
+            case 29: izlaz=uiot(p1, p2) #proveriti
+            case 30: izlaz=oiot(p1, p2, p3, u1) #proveriti
             case 0: izlaz=kolozadrske(p1, p2, u1, u2)
-        upisi_izlaz(opcije, blok.rb_bloka, izlaz)       
+        upisi_izlaz(opcije, blok.rb_bloka, decimal.Decimal(str(izlaz)))       
 
 def racunaj(opcije:OpcijeSimulacije):
     '''
     funkcija u kojoj treba da se desi svo racunanje i integracija
     '''
     slog ={
-        "k1":0.0,
-        "k2":0.0,
-        "k3":0.0
+        "k1":decimal.Decimal('0'),
+        "k2":decimal.Decimal('0'),
+        "k3":decimal.Decimal('0')
     }
     for i in range(1, opcije.br_integratora+1):
         opcije.nizK[i] = copy(slog)
-    opcije.pola_intervala_integracije = opcije.interval_integracije/2.0
-    opcije.trenutno_vreme = decimal.Decimal('0.0')
+    opcije.pola_intervala_integracije = opcije.interval_integracije/decimal.Decimal('2')
+    opcije.trenutno_vreme = dec_zero
     #zaokruzivanje vremena na broj decimala intervala integracije
     if opcije.trenutno_vreme == 0.0:
         postavi_pocetne_izlaze(opcije)
@@ -510,10 +549,10 @@ def racunaj(opcije:OpcijeSimulacije):
 
         for pomprom in range(1, opcije.br_integratora+1):
             
-            opcije.vektorZ[pomprom] = opcije.vektorY[pomprom]+0.0
+            opcije.vektorZ[pomprom] = opcije.vektorY[pomprom]
             # print(opcije.nizK[pomprom]["k1"])
-            opcije.nizK[pomprom]["k1"] =opcije.interval_integracije*opcije.vektorX[pomprom]+0.0
-            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + 0.5*opcije.nizK[pomprom]["k1"]+0.0
+            opcije.nizK[pomprom]["k1"] =opcije.interval_integracije*opcije.vektorX[pomprom]
+            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + decimal.Decimal('0.5')*opcije.nizK[pomprom]["k1"]
         opcije.trenutno_vreme += decimal.Decimal(str(opcije.pola_intervala_integracije))
         pola_intervala(opcije)
         
@@ -523,16 +562,16 @@ def racunaj(opcije:OpcijeSimulacije):
         opcije.vrsta_prekida={"tip":opcije.faza_rada[2],"poruka":"Druga Pol"}
         
         for pomprom in range(1, opcije.br_integratora+1):
-            opcije.nizK[pomprom]["k2"] = float(decimal.Decimal(str(opcije.interval_integracije))*decimal.Decimal(str(opcije.vektorX[pomprom])))
-            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + float(decimal.Decimal('0.5')*decimal.Decimal(str(opcije.nizK[pomprom]["k2"])))
+            opcije.nizK[pomprom]["k2"] = opcije.interval_integracije*opcije.vektorX[pomprom]
+            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + decimal.Decimal('0.5')*opcije.nizK[pomprom]["k2"]
 
         pola_intervala(opcije)
         #kraj racuna f(Xn+1/2*h, Yn+1/2*k2)
 
         #racuna se f(Xn+h, Yn+k3)
         for pomprom in range(1, opcije.br_integratora+1):
-            opcije.nizK[pomprom]["k3"] = float(decimal.Decimal(str(opcije.interval_integracije))*decimal.Decimal(str(opcije.vektorX[pomprom])))
-            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + float(decimal.Decimal('0.5')*decimal.Decimal(str(opcije.nizK[pomprom]["k3"])))
+            opcije.nizK[pomprom]["k3"] = opcije.interval_integracije*opcije.vektorX[pomprom]
+            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + opcije.nizK[pomprom]["k3"]
 
         opcije.trenutno_vreme += decimal.Decimal(str(opcije.pola_intervala_integracije)) 
 
@@ -540,10 +579,7 @@ def racunaj(opcije:OpcijeSimulacije):
         #kraj racuna f(Xn+h, Yn+k3)
 
         for pomprom in range(1, opcije.br_integratora+1):
-            # opcije.vektorY[pomprom] = decimal.Decimal(str(opcije.vektorZ[pomprom]))+decimal.Decimal(str(1.0/6.0))*decimal.Decimal(str(opcije.nizK[pomprom]["k1"]+2.0*opcije.nizK[pomprom]["k2"]+2.0*opcije.nizK[pomprom]["k3"]+opcije.interval_integracije*opcije.vektorX[pomprom]))
-            sestina = decimal.Decimal(str(1/6))
-            niz_k = decimal.Decimal(str(opcije.nizK[pomprom]["k1"]+2.0*opcije.nizK[pomprom]["k2"]+2.0*opcije.nizK[pomprom]["k3"]+opcije.interval_integracije*opcije.vektorX[pomprom]))
-            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom]+float(sestina*niz_k)
+            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom]+(opcije.nizK[pomprom]["k1"]+decimal.Decimal('2')*opcije.nizK[pomprom]["k2"]+decimal.Decimal('2')*opcije.nizK[pomprom]["k3"]+opcije.interval_integracije*opcije.vektorX[pomprom])/decimal.Decimal('6')
 
         pola_intervala(opcije)
         opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= copy(opcije.niz_izlaza)
@@ -575,18 +611,19 @@ def izracunaj(sledeciBlok, opcije:OpcijeSimulacije):
         return
     
     blok = opcije.niz_sortiran[sledeciBlok]
-    p1 = blok.par1+0.0
-    p2 = blok.par2+0.0
-    p3 = blok.par3+0.0
+    p1 = blok.par1
+    p2 = blok.par2
+    p3 = blok.par3
 
     #u pomu{N} se upisuje vrednost izlaza za rbr blok ulaza
-    pomu1 = opcije.niz_obradjen[blok.rb_bloka].ulaz1+0.0
-    u1 = 0.0 if pomu1 == 0.0 else opcije.niz_izlaza[pomu1]
-    pomu2 = opcije.niz_obradjen[blok.rb_bloka].ulaz2+0.0
-    u2 = 0.0 if pomu2 == 0.0 else opcije.niz_izlaza[pomu2]
-    pomu3 = opcije.niz_obradjen[blok.rb_bloka].ulaz3+0.0
-    u3 = 0.0 if pomu3 == 0.0 else opcije.niz_izlaza[pomu3]
-    izlaz = 0.0
+
+    pomu1 = opcije.niz_obradjen[blok.rb_bloka].ulaz1
+    u1 = dec_zero if pomu1 == 0 else opcije.niz_izlaza[pomu1]
+    pomu2 = opcije.niz_obradjen[blok.rb_bloka].ulaz2
+    u2 = dec_zero if pomu2 == 0 else opcije.niz_izlaza[pomu2]
+    pomu3 = opcije.niz_obradjen[blok.rb_bloka].ulaz3
+    u3 = dec_zero if pomu3 == 0 else opcije.niz_izlaza[pomu3]
+    izlaz = dec_zero
 
     match blok.sifra_bloka:
         #sve funkcije koje traze izlaz nekog drugog bloka kao svoj ulaz, koriste funkciju vrati_blok() 
@@ -630,9 +667,11 @@ def izracunaj(sledeciBlok, opcije:OpcijeSimulacije):
         case 26: izlaz=sabirac(p1, p2, p3,u1, u2, u3 )
         case 27: izlaz=mnozac(u1, u2)
         case 28: izlaz=wye(p1, p2, u1, u2, blok, blok ) #proveriti
+        case 29: izlaz=uiot(p1, p2) #proveriti
+        case 30: izlaz=oiot(p1, p2, p3, u1) #proveriti
         case 0: izlaz=kolozadrske(p1, p2, u1, u2)
     if blok.sifra_bloka!=10:
-        upisi_izlaz(opcije, blok.rb_bloka, izlaz)
+        upisi_izlaz(opcije, blok.rb_bloka, decimal.Decimal(str(izlaz)))
     
     if(sledeciBlok<=opcije.br_blokova):
         sledeciBlok+=1
