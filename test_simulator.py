@@ -5,10 +5,20 @@ def main():
     pocetak = time.time()
     # opcije = OpcijeSimulacije(tabela_konfiguracije="testPodaci/tk11.csv", interval_stampanja= 0.1, interval_integracije= 0.1, duzina_simulacije= 10)
     # student test
-    interv_s = decimal.Decimal('0.1')
-    interv_i = decimal.Decimal('0.1')
-    duzina_s = decimal.Decimal('10')
-    tabela_konf = "testPodaci/termostat.csv"
+    # interv_s = decimal.Decimal('0.1')
+    print("""Pravila simulacije:
+    1. Interval integracije i interval štampanja su decimalni zapisi. Npr 0.1 | 0.01
+    2. Interval štampanja ne može biti veći od intervala integracije
+    3. Dužina simulacije je ceo broj veći od 0
+    4. Tabela konfiguracije je relativna ili apsolutna putanja do csv fajla
+    """)
+    interv_s = decimal.Decimal(input("Unesi interval štampanja: "))
+    # interv_i = decimal.Decimal('0.1')
+    interv_i = decimal.Decimal(input("Unesi interval integracije: "))
+    # duzina_s = decimal.Decimal('10')
+    duzina_s = decimal.Decimal(input("Unesi dužinu simulacije: "))
+    # tabela_konf = "testPodaci/termostat.csv"
+    tabela_konf = input("Unesi putanju do tabele konfiguracije: ")
     opcije = OpcijeSimulacije(tabela_konfiguracije=tabela_konf, interval_stampanja= interv_s, interval_integracije= interv_i, duzina_simulacije= duzina_s, preciznost=6)
     print("----------------Niz blokova-------------------")
     sim.ucitaj_blokove(opcije)
@@ -43,7 +53,7 @@ def main():
     # print(json.dumps(opcije.matrica_izlaza, indent=4))
     print("----------------Matrica izlaza-------------------")
     print(json.dumps(opcije.matrica_izlaza, indent=4,cls=DecimalEncoder))
-    file_name = opcije.tabela_konfiguracije.split("/")[-1][:-4]
+    file_name = opcije.tabela_konfiguracije.split("\\")[-1][:-4]
     result_file_name = f"rezultati/result-{file_name}.json"
     print(f"naziv fajla: {result_file_name}")
     with open(result_file_name, 'w') as fp:
