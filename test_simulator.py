@@ -53,7 +53,12 @@ def main():
     # print(json.dumps(opcije.matrica_izlaza, indent=4))
     print("----------------Matrica izlaza-------------------")
     print(json.dumps(opcije.matrica_izlaza, indent=4,cls=DecimalEncoder))
-    file_name = opcije.tabela_konfiguracije.split("\\")[-1][:-4]
+    if "\\" in opcije.tabela_konfiguracije:
+
+        file_name = opcije.tabela_konfiguracije.split("\\")[-1][:-4]
+    else:
+        file_name = opcije.tabela_konfiguracije.split("/")[-1][:-4]
+
     result_file_name = f"rezultati/result-{file_name}.json"
     print(f"naziv fajla: {result_file_name}")
     with open(result_file_name, 'w') as fp:
