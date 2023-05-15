@@ -116,7 +116,7 @@ def signum(u1):
     return izlaz
 
 def sinus(p1,p2,p3,u1):
-    izlaz=p1*sin(p2*u1 + p3)
+    izlaz=p1*decimal.Decimal(str(sin(p2*u1 + p3)))
     return izlaz
 
 def kosinus(p1,p2,p3,u1):

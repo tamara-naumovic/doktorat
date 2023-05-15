@@ -17,9 +17,10 @@ def main():
     interv_i = decimal.Decimal(input("Unesi interval integracije: "))
     # duzina_s = decimal.Decimal('10')
     duzina_s = decimal.Decimal(input("Unesi dužinu simulacije: "))
+    preciznost = int(input("Na kojoj decimali je potrebna preciznost: "))
     # tabela_konf = "testPodaci/termostat.csv"
     tabela_konf = input("Unesi putanju do tabele konfiguracije: ")
-    opcije = OpcijeSimulacije(tabela_konfiguracije=tabela_konf, interval_stampanja= interv_s, interval_integracije= interv_i, duzina_simulacije= duzina_s, preciznost=6)
+    opcije = OpcijeSimulacije(tabela_konfiguracije=tabela_konf, interval_stampanja= interv_s, interval_integracije= interv_i, duzina_simulacije= duzina_s, preciznost=preciznost)
     print("----------------Niz blokova-------------------")
     sim.ucitaj_blokove(opcije)
     print(json.dumps(opcije.niz_blokova, default=print,cls=DecimalEncoder))
@@ -33,7 +34,8 @@ def main():
     
     print("----------------Sortiran niz blokova-------------------")
     sim.sortiraj_niz(opcije)
-    print(json.dumps(opcije.niz_sortiran, default=print,cls=DecimalEncoder))
+    print(opcije.niz_sortiran)
+    # print(json.dumps(opcije.niz_sortiran, default=print,cls=DecimalEncoder))
     # print("----------------Niz izlaza-------------------")
 
     # sim.generisi_izlaz_indekse(opcije)
