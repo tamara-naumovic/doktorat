@@ -1,4 +1,5 @@
 from opcije_simulacije import OpcijeSimulacije, DecimalEncoder
+from time import sleep
 import sim, json, pprint, time, decimal
 
 def main():
@@ -51,7 +52,14 @@ def main():
     print(opcije.br_integratora)
     print("----------------Racunaj-------------------")
 
-    sim.racunaj(opcije)
+    nit = sim.pokreni_simulaciju(opcije)
+    sleep(2)
+    sim.pauziraj_simulaciju()
+    sleep(1)
+    sim.nastavi_simulaciju()
+    
+    nit.join()
+    
     # print(json.dumps(opcije.matrica_izlaza, indent=4))
     print("----------------Matrica izlaza-------------------")
     print(json.dumps(opcije.matrica_izlaza, indent=4,cls=DecimalEncoder))

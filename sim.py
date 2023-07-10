@@ -11,6 +11,8 @@ import urllib.request
 import json, csv
 import decimal
 from copy import copy
+from threading import Thread, Event
+from time import sleep
 
 dec_zero = decimal.Decimal('0.0')
 
@@ -48,6 +50,8 @@ sifre = {
     "uiot":29,
     "oiot":30
 }
+
+pauza = Event()
 
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -513,6 +517,17 @@ def postavi_pocetne_izlaze(opcije:OpcijeSimulacije):
             case 0: izlaz=kolozadrske(p1, p2, u1, u2)
         upisi_izlaz(opcije, blok.rb_bloka, decimal.Decimal(str(izlaz)))       
 
+def pokreni_simulaciju(opcije):
+    t = Thread(target=racunaj, args=(opcije))
+    t.start()
+    return t
+
+def pauziraj_simulaciju():
+    pauza.set()
+    
+def nastavi_simulaciju():
+    pauza.clear()
+
 def racunaj(opcije:OpcijeSimulacije):
     '''
     funkcija u kojoj treba da se desi svo racunanje i integracija
@@ -544,56 +559,59 @@ def racunaj(opcije:OpcijeSimulacije):
     #brtacstampe
     pola_intervala(opcije)
     # opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= opcije.niz_izlaza
+    global pauza
     while True:
-        opcije.vrsta_prekida={"tip":opcije.faza_rada[1],"poruka":"Prva Pol"}
+        sleep(1)
+        if not pauza.is_set():
+            opcije.vrsta_prekida={"tip":opcije.faza_rada[1],"poruka":"Prva Pol"}
 
-        for pomprom in range(1, opcije.br_integratora+1):
+            for pomprom in range(1, opcije.br_integratora+1):
+                
+                opcije.vektorZ[pomprom] = opcije.vektorY[pomprom]
+                # print(opcije.nizK[pomprom]["k1"])
+                opcije.nizK[pomprom]["k1"] =opcije.interval_integracije*opcije.vektorX[pomprom]
+                opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + decimal.Decimal('0.5')*opcije.nizK[pomprom]["k1"]
+            opcije.trenutno_vreme += decimal.Decimal(str(opcije.pola_intervala_integracije))
+            pola_intervala(opcije)
             
-            opcije.vektorZ[pomprom] = opcije.vektorY[pomprom]
-            # print(opcije.nizK[pomprom]["k1"])
-            opcije.nizK[pomprom]["k1"] =opcije.interval_integracije*opcije.vektorX[pomprom]
-            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + decimal.Decimal('0.5')*opcije.nizK[pomprom]["k1"]
-        opcije.trenutno_vreme += decimal.Decimal(str(opcije.pola_intervala_integracije))
-        pola_intervala(opcije)
-        
-        #kraj racuna f(Xn+1/2*h, Yn+1/2*k1)
-        
-        #druga polovina intervala: racuna se f(Xn+1/2*h, Yn+1/2*k2)
-        opcije.vrsta_prekida={"tip":opcije.faza_rada[2],"poruka":"Druga Pol"}
-        
-        for pomprom in range(1, opcije.br_integratora+1):
-            opcije.nizK[pomprom]["k2"] = opcije.interval_integracije*opcije.vektorX[pomprom]
-            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + decimal.Decimal('0.5')*opcije.nizK[pomprom]["k2"]
+            #kraj racuna f(Xn+1/2*h, Yn+1/2*k1)
+            
+            #druga polovina intervala: racuna se f(Xn+1/2*h, Yn+1/2*k2)
+            opcije.vrsta_prekida={"tip":opcije.faza_rada[2],"poruka":"Druga Pol"}
+            
+            for pomprom in range(1, opcije.br_integratora+1):
+                opcije.nizK[pomprom]["k2"] = opcije.interval_integracije*opcije.vektorX[pomprom]
+                opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + decimal.Decimal('0.5')*opcije.nizK[pomprom]["k2"]
 
-        pola_intervala(opcije)
-        #kraj racuna f(Xn+1/2*h, Yn+1/2*k2)
+            pola_intervala(opcije)
+            #kraj racuna f(Xn+1/2*h, Yn+1/2*k2)
 
-        #racuna se f(Xn+h, Yn+k3)
-        for pomprom in range(1, opcije.br_integratora+1):
-            opcije.nizK[pomprom]["k3"] = opcije.interval_integracije*opcije.vektorX[pomprom]
-            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + opcije.nizK[pomprom]["k3"]
+            #racuna se f(Xn+h, Yn+k3)
+            for pomprom in range(1, opcije.br_integratora+1):
+                opcije.nizK[pomprom]["k3"] = opcije.interval_integracije*opcije.vektorX[pomprom]
+                opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + opcije.nizK[pomprom]["k3"]
 
-        opcije.trenutno_vreme += decimal.Decimal(str(opcije.pola_intervala_integracije)) 
+            opcije.trenutno_vreme += decimal.Decimal(str(opcije.pola_intervala_integracije)) 
 
-        pola_intervala(opcije)
-        #kraj racuna f(Xn+h, Yn+k3)
+            pola_intervala(opcije)
+            #kraj racuna f(Xn+h, Yn+k3)
 
-        for pomprom in range(1, opcije.br_integratora+1):
-            opcije.vektorY[pomprom] = opcije.vektorZ[pomprom]+(opcije.nizK[pomprom]["k1"]+decimal.Decimal('2')*opcije.nizK[pomprom]["k2"]+decimal.Decimal('2')*opcije.nizK[pomprom]["k3"]+opcije.interval_integracije*opcije.vektorX[pomprom])/decimal.Decimal('6')
+            for pomprom in range(1, opcije.br_integratora+1):
+                opcije.vektorY[pomprom] = opcije.vektorZ[pomprom]+(opcije.nizK[pomprom]["k1"]+decimal.Decimal('2')*opcije.nizK[pomprom]["k2"]+decimal.Decimal('2')*opcije.nizK[pomprom]["k3"]+opcije.interval_integracije*opcije.vektorX[pomprom])/decimal.Decimal('6')
 
-        pola_intervala(opcije)
-        opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= copy(opcije.niz_izlaza)
-        # print(opcije.niz_izlaza)
-        if(opcije.vrsta_prekida["tip"] in [opcije.faza_rada[3],opcije.faza_rada[4]]):
-            print("-------------------Kraj----------------")
-            print(f"Tip prekida: {opcije.vrsta_prekida['tip']}")   
-            print(f"Poruka: {opcije.vrsta_prekida['poruka']}")   
-            break
-        if(opcije.trenutno_vreme>opcije.duzina_simulacije):
-            print("Kraj simulacije u odnosu na vreme")
-            print(f"Tip prekida: {opcije.vrsta_prekida['tip']}")   
-            print(f"Poruka: {opcije.vrsta_prekida['poruka']}")   
-            break
+            pola_intervala(opcije)
+            opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= copy(opcije.niz_izlaza)
+            # print(opcije.niz_izlaza)
+            if(opcije.vrsta_prekida["tip"] in [opcije.faza_rada[3],opcije.faza_rada[4]]):
+                print("-------------------Kraj----------------")
+                print(f"Tip prekida: {opcije.vrsta_prekida['tip']}")   
+                print(f"Poruka: {opcije.vrsta_prekida['poruka']}")   
+                break
+            if(opcije.trenutno_vreme>opcije.duzina_simulacije):
+                print("Kraj simulacije u odnosu na vreme")
+                print(f"Tip prekida: {opcije.vrsta_prekida['tip']}")   
+                print(f"Poruka: {opcije.vrsta_prekida['poruka']}")   
+                break
         
 
 def pola_intervala(opcije:OpcijeSimulacije):
@@ -675,7 +693,7 @@ def izracunaj(sledeciBlok, opcije:OpcijeSimulacije):
     
     if(sledeciBlok<=opcije.br_blokova):
         sledeciBlok+=1
-        izracunaj(sledeciBlok, opcije)
+        (sledeciBlok, opcije)
     else:
         if(sledeciBlok>opcije.br_blokova):
             print("Greska. Kraj?")
