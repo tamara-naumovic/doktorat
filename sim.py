@@ -11,7 +11,7 @@ import urllib.request
 import json, csv
 import decimal
 from copy import copy
-from threading import Thread, Event
+from threading import Thread, Event, Lock
 from time import sleep
 
 dec_zero = decimal.Decimal('0.0')
@@ -52,6 +52,7 @@ sifre = {
 }
 
 pauza = Event()
+mutex = Lock()
 
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -518,7 +519,7 @@ def postavi_pocetne_izlaze(opcije:OpcijeSimulacije):
         upisi_izlaz(opcije, blok.rb_bloka, decimal.Decimal(str(izlaz)))       
 
 def pokreni_simulaciju(opcije):
-    t = Thread(target=racunaj, args=(opcije))
+    t = Thread(target= lambda: racunaj(opcije))
     t.start()
     return t
 
@@ -559,17 +560,17 @@ def racunaj(opcije:OpcijeSimulacije):
     #brtacstampe
     pola_intervala(opcije)
     # opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= opcije.niz_izlaza
-    global pauza
+    global pauza, mutex
     while True:
-        sleep(1)
         if not pauza.is_set():
+            mutex.acquire()
             opcije.vrsta_prekida={"tip":opcije.faza_rada[1],"poruka":"Prva Pol"}
 
             for pomprom in range(1, opcije.br_integratora+1):
                 
                 opcije.vektorZ[pomprom] = opcije.vektorY[pomprom]
                 # print(opcije.nizK[pomprom]["k1"])
-                opcije.nizK[pomprom]["k1"] =opcije.interval_integracije*opcije.vektorX[pomprom]
+                opcije.nizK[pomprom]["k1"] = opcije.interval_integracije*opcije.vektorX[pomprom]
                 opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + decimal.Decimal('0.5')*opcije.nizK[pomprom]["k1"]
             opcije.trenutno_vreme += decimal.Decimal(str(opcije.pola_intervala_integracije))
             pola_intervala(opcije)
@@ -612,6 +613,7 @@ def racunaj(opcije:OpcijeSimulacije):
                 print(f"Tip prekida: {opcije.vrsta_prekida['tip']}")   
                 print(f"Poruka: {opcije.vrsta_prekida['poruka']}")   
                 break
+            mutex.release()
         
 
 def pola_intervala(opcije:OpcijeSimulacije):
