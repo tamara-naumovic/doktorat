@@ -614,7 +614,8 @@ def racunaj(opcije:OpcijeSimulacije):
                 print(f"Poruka: {opcije.vrsta_prekida['poruka']}")   
                 break
             mutex.release()
-        
+        else:
+            sleep(secs=0.3)
 
 def pola_intervala(opcije:OpcijeSimulacije):
     #prepisivanje vektorY u niz_izlaza
