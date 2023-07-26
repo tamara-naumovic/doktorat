@@ -696,7 +696,7 @@ def izracunaj(sledeciBlok, opcije:OpcijeSimulacije):
     
     if(sledeciBlok<=opcije.br_blokova):
         sledeciBlok+=1
-        (sledeciBlok, opcije)
+        izracunaj(sledeciBlok, opcije)
     else:
         if(sledeciBlok>opcije.br_blokova):
             print("Greska. Kraj?")
