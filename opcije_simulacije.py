@@ -30,7 +30,7 @@ class OpcijeSimulacije():
     vektorZ: dict[int, Decimal] = None  # y(n)
     nizK: dict[int, list] = None
     faza_rada: dict[int, str] = None
-    preciznost:int = 10
+    preciznost: int = 10
     vrsta_prekida = None
 
     '''
