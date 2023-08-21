@@ -1,21 +1,5 @@
 version: '3'
 services:
-  simulatorAPI:
-    build:
-      context: .
-      dockerfile: Dockerfile_sim
-    ports:
-      - "5000:5000"
-    depends_on:
-      - rabbitmq
-
-  test_simulator:
-    build:
-      context: .
-      dockerfile: Dockerfile_test
-    depends_on:
-      - rabbitmq
-
   rabbitmq:
     image: "rabbitmq:3-management"
     ports:
@@ -24,3 +8,28 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: "guest"
       RABBITMQ_DEFAULT_PASS: "guest"
+  simulacija:
+    build:
+      context: .
+      dockerfile: Dockerfile_sim
+    environment:
+      FLASK_RUN_HOST: 0.0.0.0
+    ports:
+      - "5002:5002"
+    depends_on:
+      - rabbitmq
+    volumes:
+      - .:/app
+  test_simulator:
+    build:
+      context: .
+      dockerfile: Dockerfile_test
+    environment:
+      FLASK_RUN_HOST: 0.0.0.0
+      adresa_simluacionog_servisa: "http://simulacija:5002"
+    ports:
+      - "5000:5000"
+    depends_on:
+      - rabbitmq
+    volumes:
+      - .:/app

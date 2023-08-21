@@ -1,20 +1,71 @@
-from opcije_simulacije import OpcijeSimulacije
-from csmp_blok import CSMPBlok, from_dict_to_dataclass
+import csv
+import urllib.request
+import uuid
+from copy import copy
 from math import sqrt, sin, cos, atan, exp, copysign
 from random import uniform
-import urllib.request
-# import numpy as np
-# import matplotlib.pyplot as plt
-# import scipy as sp
-# from scipy.integrate import solve_ivp
-import json, csv
-import decimal
-from copy import copy
 from threading import Thread, Event, Lock
 from time import sleep
-import uuid
 
+import pika
+from flask import Flask, request, jsonify
+
+import decimal
+import json
+from csmp_blok import CSMPBlok
+from csmp_blok import from_dict_to_dataclass
+from konverzija_util import json_u_opcije_simulacije
+from opcije_simulacije import OpcijeSimulacije, DecimalEncoder
+
+app = Flask(__name__)
 dec_zero = decimal.Decimal('0.0')
+sleep(30)
+connection = pika.BlockingConnection(pika.ConnectionParameters('rabbitmq'))
+channel = connection.channel()
+
+@app.route('/ucitaj', methods=['POST'])
+def ucitaj():
+    print('stigao zahtjev')
+    data = request.json.get('opcije')
+    opcije_simulacije: OpcijeSimulacije = json_u_opcije_simulacije(data)
+    obradjene_opcije = ucitaj_blokove(opcije_simulacije)
+    return jsonify({'opcije' : obradjene_opcije})
+
+
+@app.route('/obradi', methods=['POST'])
+def obradi():
+    data = request.json.get('opcije')
+    opcije_simulacije: OpcijeSimulacije = json_u_opcije_simulacije(data)
+    obradjene_opcije = obradi_niz_blokova(opcije_simulacije)
+    return jsonify({'opcije': obradjene_opcije})
+
+
+@app.route('/sortiraj', methods=['POST'])
+def sortiraj():
+    data = request.json.get('opcije')
+    opcije_simulacije: OpcijeSimulacije = json_u_opcije_simulacije(data)
+    obradjene_opcije = sortiraj_niz(opcije_simulacije)
+    return jsonify({'opcije': obradjene_opcije})
+
+
+@app.route('/pokreni', methods=['POST'])
+def pokreni():
+    data = request.json.get('opcije')
+    opcije_simulacije: OpcijeSimulacije = json_u_opcije_simulacije(data)
+    novi_uuid = pokreni_simulaciju(opcije_simulacije)
+    return jsonify({'uuid': novi_uuid})
+
+
+@app.route('/pauziraj/<nit>', methods=['GET'])
+def pauziraj(nit):
+    print(f'pauziram {nit}')
+    opcije = pauziraj_simulaciju(uuid.UUID(nit))
+    return jsonify({'opcije': opcije})
+
+
+@app.route('/nastavi/<nit>', methods=['GET'])
+def nastavi(nit):
+    print(f'nastavljam {nit}')
 
 niz_izlaza:list = None
 sifre = {
@@ -583,7 +634,6 @@ class RacunajNit(Thread):
         # self.opcije.matrica_izlaza[str(self.opcije.trenutno_vreme)]= self.opcije.niz_izlaza
         while True:
             if not self._pauza.is_set():
-                print('usao')
                 self.opcije.vrsta_prekida = {"tip": self.opcije.faza_rada[1], "poruka": "Prva Pol"}
 
                 for pomprom in range(1, self.opcije.br_integratora + 1):
@@ -630,15 +680,23 @@ class RacunajNit(Thread):
                     print("-------------------Kraj----------------")
                     print(f"Tip prekida: {self.opcije.vrsta_prekida['tip']}")
                     print(f"Poruka: {self.opcije.vrsta_prekida['poruka']}")
+                    self.zavrsi_simulaciju()
                     break
                 if self.opcije.trenutno_vreme > self.opcije.duzina_simulacije:
                     print("Kraj simulacije u odnosu na vreme")
                     print(f"Tip prekida: {self.opcije.vrsta_prekida['tip']}")
                     print(f"Poruka: {self.opcije.vrsta_prekida['poruka']}")
+                    self.zavrsi_simulaciju()
                     break
             else:
                 print('pauzirano')
                 sleep(0.3)
+
+    def zavrsi_simulaciju(self):
+        global simulacione_niti
+        # del simulacione_niti[self.id_simulacije]
+        print(" [x] Saljem poruku")
+        channel.basic_publish(exchange='', routing_key='gotove_simulacije', body=str(self.id_simulacije))
 
     def pola_intervala(self):
         # prepisivanje vektorY u niz_izlaza
@@ -749,3 +807,7 @@ class RacunajNit(Thread):
         else:
             if (sledeciBlok > self.opcije.br_blokova):
                 print("Greska. Kraj?")
+
+if __name__ == "__main__":
+    channel.queue_declare(queue='gotove_simulacije')
+    app.run(host='0.0.0.0', port = 5002)
