@@ -1,18 +1,14 @@
 from timeit import repeat
 from opcije_simulacije import OpcijeSimulacije
 from csmp_blok import CSMPBlok, from_dict_to_dataclass
-from math import sqrt, sin, cos, atan, exp, copysign
+from math import sqrt, sin, cos, atan, exp, copysign, trunc
 from random import uniform
 import urllib.request
-# import numpy as np
-# import matplotlib.pyplot as plt
-# import scipy as sp
-# from scipy.integrate import solve_ivp
 import json, csv
 import decimal
 from copy import copy
 
-dec_zero = decimal.Decimal('0.0')
+dec_zero = decimal.Decimal('0.00')
 
 niz_izlaza:list = None
 sifre = {
@@ -192,15 +188,15 @@ def generatorImpulsa(p1,u1):
     return izlaz
 
 #
-def jedinicnoKasnjenje(p1,p2,u1):
-    #pogledati validnost potpisa ove funkcije
-    pass
-
-#     if self.VrstaPrekida['tip'] == "NemaRac":
-#         izlaz=p1
-#     else:
-#         izlaz=p2
-#     self.ObradjenNiz[brojac]['parII'] = u1
+def jedinicnoKasnjenje(u1, opcije:OpcijeSimulacije):
+    #izlaz iz bloka je izlaz u1 za vreme t-dt/2
+    rbr_ulaznog_bloka = u1
+    izlaz = 0
+    if opcije.trenutno_vreme!=dec_zero:
+        vreme = opcije.trenutno_vreme-opcije.pola_intervala_integracije
+        izlaz = opcije.matrica_izlaza[str(vreme)][rbr_ulaznog_bloka]
+    return izlaz
+    
 
 def kolozadrske(p1,p2,u1,u2):
     pass
@@ -416,16 +412,11 @@ def sortiraj_niz(opcije: OpcijeSimulacije):
                 ulaz2 = opcije.niz_obradjen[i].ulaz2
                 ulaz3 = opcije.niz_obradjen[i].ulaz3
                 #kao ulaz se dobije redni br bloka, redni brojevi pocinju od 1 ili nula ako ne postoji
-                if ulaz1!=0:
-                    uslov1 = opcije.niz_obradjen[ulaz1].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz1].sortiran or ulaz1 in [0, opcije.br_blokova]
-                else: uslov1 = True
-                if ulaz2!=0:
-                    uslov2 = opcije.niz_obradjen[ulaz2].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz2].sortiran or ulaz2 in [0, opcije.br_blokova]
-                else: uslov2=True
-                if ulaz3!=0:
-                    uslov3 = opcije.niz_obradjen[ulaz3].sifra_bloka in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz3].sortiran or ulaz3 in [0, opcije.br_blokova]
-                else: uslov3 = True
-
+                
+                uslov1 = ulaz1 == 0 or opcije.niz_obradjen[ulaz1].sifra_bloka not in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz1].sortiran  
+                uslov2 = ulaz3 == 0 or opcije.niz_obradjen[ulaz2].sifra_bloka not in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz2].sortiran 
+                uslov3 = ulaz3 == 0 or opcije.niz_obradjen[ulaz3].sifra_bloka not in [sifre["I"], sifre["U"]] or opcije.niz_obradjen[ulaz3].sortiran 
+                
                 if uslov1 and uslov2 and uslov3:
                     ponovo = True
                     br_sortiranih += 1
@@ -502,7 +493,9 @@ def postavi_pocetne_izlaze(opcije:OpcijeSimulacije):
             case 20: izlaz=relej(u1, u2, u3)
             case 21: izlaz=sinus(p1, p2, p3, u1)
             case 22: izlaz=generatorImpulsa(p1. u1)
-            case 23: izlaz=jedinicnoKasnjenje(p1, p2, u1) #pogledati validnost potpisa ove funkcije
+            case 23: 
+                izlaz=0
+                # jedinicnoKasnjenje(p1, p2, u1) 
             case 24: izlaz=vacuous(blok) #proveriti
             case 25: izlaz=opcije.trenutno_vreme
             case 26: izlaz=sabirac(p1, p2, p3,u1, u2, u3 )
@@ -542,8 +535,10 @@ def racunaj(opcije:OpcijeSimulacije):
     pomep = (opcije.pola_intervala_integracije)/(opcije.interval_stampanja*2)
     opcije.vrsta_prekida={"tip":opcije.faza_rada[0],"poruka":"Nema rac"}
     #brtacstampe
+    brTacStampe = trunc(opcije.trenutno_vreme/opcije.interval_stampanja +1)
     pola_intervala(opcije)
-    # opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= opcije.niz_izlaza
+    # { kraj racuna f(Xn,Yn) }
+    opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= opcije.niz_izlaza
     while True:
         opcije.vrsta_prekida={"tip":opcije.faza_rada[1],"poruka":"Prva Pol"}
 
@@ -553,12 +548,13 @@ def racunaj(opcije:OpcijeSimulacije):
             # print(opcije.nizK[pomprom]["k1"])
             opcije.nizK[pomprom]["k1"] =opcije.interval_integracije*opcije.vektorX[pomprom]
             opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + decimal.Decimal('0.5')*opcije.nizK[pomprom]["k1"]
-        opcije.trenutno_vreme += decimal.Decimal(str(opcije.pola_intervala_integracije))
-        pola_intervala(opcije)
         
+        opcije.trenutno_vreme += opcije.pola_intervala_integracije
+        pola_intervala(opcije)
+        opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= copy(opcije.niz_izlaza)
         #kraj racuna f(Xn+1/2*h, Yn+1/2*k1)
         
-        #druga polovina intervala: racuna se f(Xn+1/2*h, Yn+1/2*k2)
+        #DRUGA POLOVINA intervala: racuna se f(Xn+1/2*h, Yn+1/2*k2)
         opcije.vrsta_prekida={"tip":opcije.faza_rada[2],"poruka":"Druga Pol"}
         
         for pomprom in range(1, opcije.br_integratora+1):
@@ -567,14 +563,15 @@ def racunaj(opcije:OpcijeSimulacije):
 
         pola_intervala(opcije)
         #kraj racuna f(Xn+1/2*h, Yn+1/2*k2)
+        # print(f"Trenutno vreme> {opcije.trenutno_vreme}")
+        # opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= copy(opcije.niz_izlaza)
 
         #racuna se f(Xn+h, Yn+k3)
         for pomprom in range(1, opcije.br_integratora+1):
             opcije.nizK[pomprom]["k3"] = opcije.interval_integracije*opcije.vektorX[pomprom]
             opcije.vektorY[pomprom] = opcije.vektorZ[pomprom] + opcije.nizK[pomprom]["k3"]
 
-        opcije.trenutno_vreme += decimal.Decimal(str(opcije.pola_intervala_integracije)) 
-
+        opcije.trenutno_vreme += opcije.pola_intervala_integracije
         pola_intervala(opcije)
         #kraj racuna f(Xn+h, Yn+k3)
 
@@ -582,13 +579,19 @@ def racunaj(opcije:OpcijeSimulacije):
             opcije.vektorY[pomprom] = opcije.vektorZ[pomprom]+(opcije.nizK[pomprom]["k1"]+decimal.Decimal('2')*opcije.nizK[pomprom]["k2"]+decimal.Decimal('2')*opcije.nizK[pomprom]["k3"]+opcije.interval_integracije*opcije.vektorX[pomprom])/decimal.Decimal('6')
 
         pola_intervala(opcije)
-        opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= copy(opcije.niz_izlaza)
+        #{ kraj metode Runge-Kuta IV reda }
+        # opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= copy(opcije.niz_izlaza)
         # print(opcije.niz_izlaza)
         if(opcije.vrsta_prekida["tip"] in [opcije.faza_rada[3],opcije.faza_rada[4]]):
             print("-------------------Kraj----------------")
             print(f"Tip prekida: {opcije.vrsta_prekida['tip']}")   
             print(f"Poruka: {opcije.vrsta_prekida['poruka']}")   
             break
+        else:
+            pomp = round(opcije.trenutno_vreme/opcije.interval_stampanja + pomep)
+            if(brTacStampe<=pomp):
+                opcije.matrica_izlaza[str(opcije.trenutno_vreme)]= copy(opcije.niz_izlaza)
+                brTacStampe=pomp+1
         if(opcije.trenutno_vreme>opcije.duzina_simulacije):
             print("Kraj simulacije u odnosu na vreme")
             print(f"Tip prekida: {opcije.vrsta_prekida['tip']}")   
@@ -643,7 +646,8 @@ def izracunaj(sledeciBlok, opcije:OpcijeSimulacije):
                 if izlaz==False:
                     opcije.vrsta_prekida = {"tip": opcije.faza_rada[4], "poruka":"Ulaz u kvadratni koren je negativan!"}
 
-        case 10: integrator(p2,p3,u1,u2,u3,opcije,blok.rb_integratora)
+        case 10: 
+            integrator(p2,p3,u1,u2,u3,opcije,blok.rb_integratora)
         case 11: izlaz=generatorSlucajnihBrojeva()
         case 12: izlaz=p1
         case 13: izlaz=ogranicavac(p1, p2, u1)
@@ -660,7 +664,7 @@ def izracunaj(sledeciBlok, opcije:OpcijeSimulacije):
         case 20: izlaz=relej(u1, u2, u3)
         case 21: izlaz=sinus(p1, p2, p3, u1)
         case 22: izlaz=generatorImpulsa(p1. u1)
-        case 23: izlaz=jedinicnoKasnjenje(p1, p2, u1) #pogledati validnost potpisa ove funkcije
+        case 23: izlaz=jedinicnoKasnjenje(blok.ulaz1, opcije) 
         case 24: izlaz=vacuous(blok) #proveriti
         case 25: izlaz=opcije.trenutno_vreme
         case 26: izlaz=sabirac(p1, p2, p3,u1, u2, u3 )
@@ -676,5 +680,4 @@ def izracunaj(sledeciBlok, opcije:OpcijeSimulacije):
         sledeciBlok+=1
         izracunaj(sledeciBlok, opcije)
     else:
-        if(sledeciBlok>opcije.br_blokova):
-            print("Greska. Kraj?")
+        print("Greska. Kraj?")
