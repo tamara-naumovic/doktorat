@@ -44,12 +44,6 @@ sifre = {
     "uiot":29,
     "oiot":30
 }
-
-class DecimalEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, decimal.Decimal):
-            return str(obj)
-        return super(DecimalEncoder, self).default(obj)
     
 def podesi_sifru():
     '''
@@ -59,12 +53,6 @@ def podesi_sifru():
     tako da zavisno od tipa (cija lista postoji gore) kreira sifru
     '''
     pass
-
-# def izlaz(izlaz, brojac, opcije:OpcijeSimulacije):
-#     if brojac!=0:
-#         opcije.niz_izlaza[brojac]=izlaz
-#         return 
-#     else: return izlaz
 
 def sabirac(p1,p2,p3,u1,u2,u3):
     izlaz=p1*u1+p2*u2+p3*u3
@@ -119,12 +107,12 @@ def kosinus(p1,p2,p3,u1):
     izlaz=p1*cos(p2*u1+p3)
     return izlaz
 
-def arkusTanges(p1,p2,p3,u1):
+def arkusTanges(p1,p2,p3,u1, opcije):
     if (p2*u1+p3)>=0.0:
         izlaz=p1*atan(p2*u1+p3)
         return izlaz
-    else: 
-        # print("Arkus tanges je negativan") #dodati obradu grešaka
+    else:
+        opcije.vrsta_prekida = {"tip": opcije.faza_rada[4], "poruka":"Vrednost za ArcTan je negativna!"}
         return False
 
 def eksponent(p1,p2,p3,u1):
@@ -342,11 +330,7 @@ def ucitaj_blokove( opcije:OpcijeSimulacije):
                 'sifra_bloka': sifre[str(row["tip"])]
             }
             lista_dict.append(red)
-    
 
-    # with open("test.json", 'w') as outfile:
-    #     json.dump(lista_dict,outfile, cls=opcije.DecimalEncoder)
-    
     #inicijalizacija 
     incijalizuj_sve(opcije, len(lista_dict))
 
@@ -455,10 +439,7 @@ def postavi_pocetne_izlaze(opcije:OpcijeSimulacije):
         match blok.sifra_bloka:
             #sve funkcije koje traze izlaz nekog drugog bloka kao svoj ulaz, koriste funkciju vrati_blok() 
             # u okviru fje se dobija konkretan blok sa njegovim parametrima, pa je moguce dobiti njegov konkretan izlaz 
-            case 1: 
-                izlaz=arkusTanges(p1, p2,p3,u1)
-                if izlaz==False:
-                    opcije.vrsta_prekida = {"tip": opcije.faza_rada[4], "poruka":"Vrednost za ArcTan je negativna!"}
+            case 1:izlaz=arkusTanges(p1, p2,p3,u1, opcije)
             case 2: izlaz=signum(u1)
             case 3: izlaz=kosinus(p1, p2, p3,u1)
             case 4: izlaz=mrtvaZona(p1, p2, u1)
@@ -627,10 +608,7 @@ def izracunaj(sledeciBlok, opcije:OpcijeSimulacije):
     match blok.sifra_bloka:
         #sve funkcije koje traze izlaz nekog drugog bloka kao svoj ulaz, koriste funkciju vrati_blok() 
         # u okviru fje se dobija konkretan blok sa njegovim parametrima, pa je moguce dobiti njegov konkretan izlaz 
-        case 1: 
-            izlaz=arkusTanges(p1, p2,p3,u1)
-            if izlaz==False:
-                opcije.vrsta_prekida = {"tip": opcije.faza_rada[4], "poruka":"Vrednost za ArcTan je negativna!"}
+        case 1: izlaz=arkusTanges(p1, p2,p3,u1)
         case 2: izlaz=signum(u1)
         case 3: izlaz=kosinus(p1, p2, p3,u1)
         case 4: izlaz=mrtvaZona(p1, p2, u1)
