@@ -119,12 +119,12 @@ def eksponent(p1,p2,p3,u1):
     izlaz=p1*exp(p2*u1+p3)
     return izlaz
 
-def mrtvaZona(p1,p2,u1,brojac,opcije:OpcijeSimulacije):
+def mrtvaZona(p1,p2,u1):
     #p1 donja granica, p2 gornja granica
     izlaz=0 if p1<u1<p2 else u1
     return izlaz
 
-def generatorSlucajnihBrojeva(brojac, opcije:OpcijeSimulacije):
+def generatorSlucajnihBrojeva():
     izlaz = uniform(0,1)
     return izlaz
 
@@ -141,10 +141,7 @@ def pozitivniOgranicavac(u1):
     return izlaz
 #integratoru treba opcije jer upisuje u vektorY
 def integrator(p2:decimal.Decimal,p3:decimal.Decimal,u1:decimal.Decimal,u2:decimal.Decimal,u3:decimal.Decimal, opcije:OpcijeSimulacije, rbInteg):
-    # blok_intg = opcije.niz_sortiran[brojac]
     opcije.vektorX[rbInteg] = u1+p2*u2+p3*u3
-
-    # return True sta integrator da vrati kao izlaz
 
 #pitati profesora za>
 
@@ -186,20 +183,12 @@ def jedinicnoKasnjenje(u1, opcije:OpcijeSimulacije):
     return izlaz
     
 
-def kolozadrske(p1,p2,u1,u2):
-    pass
-#     if self.VrstaPrekida['tip'] == 'NemaRac':
-#         self.ObradjenNiz[brojac]["parII"] = p1
-#         p2=p1
-#     if u2<0:
-#         izlaz=0
-#     elif u2==0:
-#         izlaz=p2
-#     else:
-#         self.ObradjenNiz[brojac]["parII"]=u1
-#         izlaz=u1
+def kolozadrske(u1,u2):
+    if u2>0:
+        return u1
+    else:
+        return 0
 
-#
 def krajSimulacije(u1,u2, opcije:OpcijeSimulacije):
     if (u2<u1):
         opcije.vrsta_prekida = {"tip": opcije.faza_rada[3], "poruka":"Kraj simulacije od strane Quit elementa."}
