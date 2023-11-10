@@ -212,8 +212,9 @@ def kolozadrske(p1,p2,u1,u2):
 #         izlaz=u1
 
 #
-def krajSimulacije(u1,u2):
+def krajSimulacije(u1,u2, opcije:OpcijeSimulacije):
     if (u2<u1):
+        opcije.vrsta_prekida = {"tip": opcije.faza_rada[3], "poruka":"Kraj simulacije od strane Quit elementa."}
         return True
     else:
         return False
@@ -485,11 +486,7 @@ def postavi_pocetne_izlaze(opcije:OpcijeSimulacije):
             case 16: izlaz=negativniOgranicavac(u1)
             case 17: izlaz=offset(p1, u1)
             case 18: izlaz=pozitivniOgranicavac(u1)
-            case 19: 
-                izlaz=krajSimulacije(u1, u2)
-                if izlaz==True:
-                    opcije.vrsta_prekida = {"tip": opcije.faza_rada[3], "poruka":"Kraj simulacije od strane Quit elementa."}
-
+            case 19: izlaz=krajSimulacije(u1, u2, opcije)
             case 20: izlaz=relej(u1, u2, u3)
             case 21: izlaz=sinus(p1, p2, p3, u1)
             case 22: izlaz=generatorImpulsa(p1. u1)
@@ -501,9 +498,9 @@ def postavi_pocetne_izlaze(opcije:OpcijeSimulacije):
             case 26: izlaz=sabirac(p1, p2, p3,u1, u2, u3 )
             case 27: izlaz=mnozac(u1, u2)
             case 28: izlaz=wye(p1, p2, u1, u2, blok, blok ) #proveriti
-            case 29: izlaz=uiot(p1, p2) #proveriti
-            case 30: izlaz=oiot(p1, p2, p3, u1) #proveriti
-            case 0: izlaz=kolozadrske(p1, p2, u1, u2)
+            case 29: izlaz=uiot(p1, p2)
+            case 30: izlaz=oiot(p1, p2, p3, u1)
+            case 0: izlaz=kolozadrske(p1, p2, u1, u2) #proveriti
         upisi_izlaz(opcije, blok.rb_bloka, decimal.Decimal(str(izlaz)))
 
 def racunaj(opcije:OpcijeSimulacije):
@@ -656,11 +653,7 @@ def izracunaj(sledeciBlok, opcije:OpcijeSimulacije):
         case 16: izlaz=negativniOgranicavac(u1)
         case 17: izlaz=offset(p1, u1)
         case 18: izlaz=pozitivniOgranicavac(u1)
-        case 19: 
-                izlaz=krajSimulacije(u1, u2)
-                if izlaz==True:
-                    opcije.vrsta_prekida = {"tip": opcije.faza_rada[3], "poruka":"Kraj simulacije od strane Quit elementa."}
-
+        case 19: izlaz=krajSimulacije(u1, u2, opcije)
         case 20: izlaz=relej(u1, u2, u3)
         case 21: izlaz=sinus(p1, p2, p3, u1)
         case 22: izlaz=generatorImpulsa(p1. u1)
@@ -670,9 +663,9 @@ def izracunaj(sledeciBlok, opcije:OpcijeSimulacije):
         case 26: izlaz=sabirac(p1, p2, p3,u1, u2, u3 )
         case 27: izlaz=mnozac(u1, u2)
         case 28: izlaz=wye(p1, p2, u1, u2, blok, blok ) #proveriti
-        case 29: izlaz=uiot(p1, p2) #proveriti
-        case 30: izlaz=oiot(p1, p2, p3, u1) #proveriti
-        case 0: izlaz=kolozadrske(p1, p2, u1, u2)
+        case 29: izlaz=uiot(p1, p2) 
+        case 30: izlaz=oiot(p1, p2, p3, u1) 
+        case 0: izlaz=kolozadrske(p1, p2, u1, u2) #proveriti
     if blok.sifra_bloka!=10:
         upisi_izlaz(opcije, blok.rb_bloka, decimal.Decimal(str(izlaz)))
     
