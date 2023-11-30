@@ -66,6 +66,21 @@ def main():
     with open(result_file_name, 'w') as fp:
         json.dump(opcije.matrica_izlaza, fp,cls=DecimalEncoder)
     kraj = time.time()
+    file =open(result_file_name)
+    data = json.load(file)
+    file.close()
+
+    result_file_name_bydata = f"rezultati/result-{file_name}-bydata.json"
+
+    new_json = {}
+    for i in range(1, len(data["0.00"])+1):
+        new_json[i]={}
+    for vrm in data:
+        for key in new_json:
+            new_json[key][str(vrm)]=data[vrm][str(key)]
+    with open(result_file_name_bydata, "w") as fp:
+        json.dump(new_json, fp)
+
     print(f"Duzina simulacije: {kraj-pocetak}")
     # print("----------------Izlazi-------------------")
     # print(opcije.niz_izlaza)    

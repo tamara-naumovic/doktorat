@@ -226,8 +226,11 @@ def oiot(p1,p2,p3,u1):
     url = f'{p1}?{p2}={u1}'
     webUrl = urllib.request.urlopen(url)
     data_json = json.loads(webUrl.read().decode('utf-8'))
-    izlaz = data_json[p3]
-    return izlaz
+    if p3 in data_json:
+        izlaz = data_json[p3]
+        return izlaz
+    else:
+        return 0
 
 def uiot(p1,p2):
     # uiot je iot blok  ulaznog tipa
