@@ -1,5 +1,7 @@
 from opcije_simulacije import OpcijeSimulacije, DecimalEncoder
 import sim, json, pprint, time, decimal
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 
 def main():
     pocetak = time.time()
@@ -87,8 +89,20 @@ def main():
     
     # print("----------------Rb integratora-------------------")
     # print(opcije.niz_rb_integratora)
-
     
+    #vizualizacija test
+    odg = input("Da li zelis da vizualizujes? da/ne> ")
+    while odg=="da":
+        blok = int(input("koji blok zelis da vizualizujes? [redni broj]> "))
+
+        lists = sorted(new_json[blok].items()) # sorted by key, return a list of tuples
+
+        x, y = zip(*lists) # unpack a list of pairs into two tuples
+
+        plt.plot(x, y)
+        plt.show()
+        odg = input("Da li zelis da vizualizujes? da/ne> ")
+
 
     
 
